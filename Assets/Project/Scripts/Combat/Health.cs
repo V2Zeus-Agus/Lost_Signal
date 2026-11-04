@@ -31,6 +31,8 @@ public class Health : MonoBehaviour, IDamageable
         OnHealthChanged?.Invoke(Current, maxHealth);
     }
 
+
+
     public void TakeDamage(float amount)
     {
         if (IsDead) return;
@@ -40,4 +42,6 @@ public class Health : MonoBehaviour, IDamageable
 
         if (IsDead) OnDied?.Invoke();
     }
+
+
 }
