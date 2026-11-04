@@ -25,12 +25,14 @@ public class GameAudio : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float shootVolume = 0.45f;
     [SerializeField, Range(0f, 1f)] private float stepVolume = 0.5f;
     [SerializeField, Range(0f, 1f)] private float ambienceVolume = 0.35f;
+    [SerializeField] private float hurtCooldown = 0.35f;
 
     private AudioSource sfx;
     private AudioSource fixedSfx;
     private AudioSource loop;
     private AudioSource music;
     private float lastHealth;
+    private float nextHurtTime;
 
     private void Awake()
     {
@@ -104,7 +106,14 @@ public class GameAudio : MonoBehaviour
 
     private void OnPlayerHealthChanged(float current, float max)
     {
-        if (current < lastHealth) PlayVaried(hurt, 0.9f, 0.08f);
+        if (current < lastHealth)
+        {
+            if (Time.time >= nextHurtTime)
+            {
+                nextHurtTime = Time.time + hurtCooldown;
+                PlayVaried(hurt, 0.9f, 0.08f);
+            }
+        }
         else if (current > lastHealth) fixedSfx.PlayOneShot(heal, 0.8f);
         lastHealth = current;
     }

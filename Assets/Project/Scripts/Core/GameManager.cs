@@ -23,6 +23,8 @@ public class GameManager : MonoBehaviour
 
     public event Action<GameState> OnStateChanged;
 
+
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -33,6 +35,7 @@ public class GameManager : MonoBehaviour
         Instance = this;
         NotificationQueue.Clear();
     }
+
 
     private void OnEnable()
     {

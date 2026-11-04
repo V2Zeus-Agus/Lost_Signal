@@ -61,9 +61,13 @@ public class PlayerInputHandler : MonoBehaviour
         if (switchWeaponAction.action.WasPressedThisFrame())
             weapon.NextStrategy();
 
+
+
         bool fire = weapon.IsAutomatic ? attackAction.action.IsPressed() : attackAction.action.WasPressedThisFrame();
         if (fire)
             fireCommand.Execute();
+
+
 
         if (interactAction.action.WasPerformedThisFrame())
             interactCommand.Execute();

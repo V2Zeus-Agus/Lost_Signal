@@ -5,5 +5,5 @@ public class ResourceType : ScriptableObject
 {
     public string displayName = "Resource";
     public Color uiColor = Color.white;
-    public Sprite icon;
+    //public Sprite icon;
 }

@@ -11,6 +11,8 @@ public class ChaseState : ICreatureState
 
     public void Enter() { }
 
+
+
     public void Tick()
     {
         float distance = creature.DistanceToTarget;

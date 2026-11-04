@@ -32,6 +32,8 @@ public class HUD : MonoBehaviour
     private readonly StringBuilder builder = new StringBuilder();
     private float notificationTimer;
 
+
+
     private void OnEnable()
     {
         playerHealth.OnHealthChanged += UpdateHealth;
@@ -42,6 +44,8 @@ public class HUD : MonoBehaviour
         stamina.OnStaminaChanged += UpdateStamina;
         oxygen.OnOxygenChanged += UpdateOxygen;
     }
+
+
 
     private void OnDisable()
     {
@@ -71,6 +75,9 @@ public class HUD : MonoBehaviour
         ProcessNotifications();
     }
 
+
+
+
     private void ProcessNotifications()
     {
         if (notificationTimer > 0f)
@@ -86,6 +93,9 @@ public class HUD : MonoBehaviour
             notificationTimer = notificationDuration;
         }
     }
+
+
+
 
     private void UpdateHealth(float current, float max)
     {

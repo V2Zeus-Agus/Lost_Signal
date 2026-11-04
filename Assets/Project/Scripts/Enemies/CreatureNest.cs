@@ -23,6 +23,9 @@ public class CreatureNest : MonoBehaviour
         Spawn();
     }
 
+
+
+
     private void Spawn()
     {
         Vector2 offset = Random.insideUnitCircle * spawnRadius;
@@ -31,8 +34,12 @@ public class CreatureNest : MonoBehaviour
         if (!NavMesh.SamplePosition(candidate, out NavMeshHit hit, spawnRadius, NavMesh.AllAreas))
             return;
 
+
+
         Creature creature = factory.Create(hit.position);
         if (creature == null) return;
+
+
 
         creature.Died += OnCreatureDied;
         aliveCount++;

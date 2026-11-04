@@ -11,6 +11,8 @@ public class BurstShotStrategy : IFireStrategy
         this.spreadAngle = spreadAngle;
     }
 
+
+
     public string Name => "Ráfaga";
     public bool IsAutomatic => false;
     public float CooldownMultiplier => 2.5f;

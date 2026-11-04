@@ -8,6 +8,7 @@ public class PlayerOxygen : MonoBehaviour
     [SerializeField] private Transform safeZoneCenter;
     [SerializeField] private float safeZoneRadius = 10f;
     [SerializeField] private Health health;
+    [SerializeField] private float suffocationSeconds = 2f;
 
     public float Current { get; private set; }
     public float Max => maxOxygen;
@@ -18,6 +19,7 @@ public class PlayerOxygen : MonoBehaviour
 
     private bool lowWarningShown;
     private bool isRefilling;
+    private bool suffocationWarningShown;
 
     private void Awake()
     {
@@ -55,11 +57,25 @@ public class PlayerOxygen : MonoBehaviour
         }
 
         if (Current <= 0f && !InSafeZone)
+            Suffocate();
+        else
+            suffocationWarningShown = false;
+    }
+
+    private void Suffocate()
+    {
+        if (!suffocationWarningShown)
         {
+            suffocationWarningShown = true;
+            NotificationQueue.Enqueue("¡Te estás asfixiando! Volvé a la nave");
+        }
+
+        float damage = health.Max / suffocationSeconds * Time.deltaTime;
+        if (damage >= health.Current)
             GameManager.Instance.SetDefeatCause("TE QUEDASTE SIN OXÍGENO",
                 "Volvé a la nave antes de que se acabe el aire.");
-            health.TakeDamage(health.Max);
-        }
+
+        health.TakeDamage(damage);
     }
 
     public void UpgradeCapacity(float extraSeconds)

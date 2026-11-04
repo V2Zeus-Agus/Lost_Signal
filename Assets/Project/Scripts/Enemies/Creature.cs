@@ -41,9 +41,13 @@ public class Creature : MonoBehaviour, IPushable
     private void OnEnable() => health.OnDied += HandleDeath;
     private void OnDisable() => health.OnDied -= HandleDeath;
 
+
+
     public void Setup(EnemyData data, Transform targetTransform, IDamageable damageableTarget, Vector3 spawnPosition)
     {
         Data = data;
+
+
         target = targetTransform;
         targetDamageable = damageableTarget;
 
@@ -55,6 +59,9 @@ public class Creature : MonoBehaviour, IPushable
         agent.stoppingDistance = data.attackRange * 0.8f;
         health.Initialize(data.maxHealth);
 
+
+
+        //health.OnDied += HandleDeath;
         ChangeState(Patrol);
     }
 

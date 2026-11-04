@@ -19,6 +19,8 @@ public class Weapon : MonoBehaviour
     public event Action<string> OnStrategyChanged;
     public event Action OnFired;
 
+
+
     private void Awake()
     {
         strategies = new IFireStrategy[]

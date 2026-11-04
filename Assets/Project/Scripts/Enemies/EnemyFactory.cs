@@ -20,6 +20,8 @@ public class EnemyFactory : MonoBehaviour
         pool = new GameObjectPool<Creature>(CreateCreature, maxCreatures);
     }
 
+
+
     public Creature Create(Vector3 position)
     {
         if (!pool.TryGet(position, Quaternion.identity, out Creature creature))
@@ -28,6 +30,9 @@ public class EnemyFactory : MonoBehaviour
         creature.Setup(enemyData, player, playerDamageable, position);
         return creature;
     }
+
+
+
 
     private Creature CreateCreature(Vector3 position, Quaternion rotation)
     {

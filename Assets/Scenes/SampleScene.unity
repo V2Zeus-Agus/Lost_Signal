@@ -5393,7 +5393,7 @@ GameObject:
   - component: {fileID: 207834925}
   - component: {fileID: 207834924}
   m_Layer: 0
-  m_Name: UI Canvas
+  m_Name: UI
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -40589,7 +40589,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 577978dd46e80c64b9b9fc86f88584ed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerOxygen
-  maxOxygen: 20
+  maxOxygen: 25
   refillPerSecond: 10
   safeZoneCenter: {fileID: 432152581}
   safeZoneRadius: 10
