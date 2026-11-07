@@ -8788,6 +8788,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d0f061464ea57bb478e39f5065d35ae5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SalvageWreck
+  displayName: nave rota
   rewards:
   - resourceType: {fileID: 11400000, guid: 6f2ad5493d0d8e74290fcbe43f070c77, type: 2}
     amount: 12
@@ -10235,6 +10236,52 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 95f6077432d43bd45b368484a9bbbf8e, type: 3}
   m_PrefabInstance: {fileID: 729010292}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &733779834
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 733779836}
+  - component: {fileID: 733779835}
+  m_Layer: 0
+  m_Name: InventoryPanel
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &733779835
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 733779834}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ae985dc8b4de8a43b51d68b9888b318, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InventoryPanel
+  inventory: {fileID: 1570840693}
+  columns: 4
+--- !u!4 &733779836
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 733779834}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &744184710
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -19801,7 +19848,7 @@ MonoBehaviour:
   playerUpgrades: {fileID: 1570840700}
   costType: {fileID: 11400000, guid: 6f2ad5493d0d8e74290fcbe43f070c77, type: 2}
   costPerUpgrade: 3
-  maxUpgrades: 5
+  scaledBaseCost: 10
 --- !u!65 &1569192742
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -19970,6 +20017,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Inventory
   slotCount: 12
+  maxItems: 30
+  itemsPerBackpackLevel: 10
+  absoluteMaxItems: 50
+  upgrades: {fileID: 0}
 --- !u!114 &1570840694
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20065,7 +20116,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Stamina
   maxStamina: 100
-  drainPerSecond: 25
+  drainPerSecond: 6.25
   regenPerSecond: 24
   regenDelay: 1
   minToSprintAgain: 20
@@ -21002,6 +21053,53 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: af1c3ba82cd066746af466f0b08191db, type: 3}
   m_PrefabInstance: {fileID: 1641738565}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1643239229
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1643239231}
+  - component: {fileID: 1643239230}
+  m_Layer: 0
+  m_Name: DevConsole
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1643239230
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1643239229}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8038b16b9dd736a4396e136333e92fdd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DevConsole
+  itemDatabase: {fileID: 11400000, guid: 53e47a077eb57d0408f08c7a591f3d72, type: 2}
+  inventory: {fileID: 1570840693}
+  defaultAmount: 10
+--- !u!4 &1643239231
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1643239229}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1647854994
 GameObject:
   m_ObjectHideFlags: 0
@@ -27324,3 +27422,5 @@ SceneRoots:
   - {fileID: 552670542}
   - {fileID: 1415296306}
   - {fileID: 69028287}
+  - {fileID: 733779836}
+  - {fileID: 1643239231}

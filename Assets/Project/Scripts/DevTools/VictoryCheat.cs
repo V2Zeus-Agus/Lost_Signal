@@ -1,11 +1,19 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+/// <summary>
+/// Atajos de prueba. Solo existen en el editor y en builds de desarrollo (Debug.isDebugBuild):
+/// en una build final para Steam no se crean.
+///  F7  reparar la nave al instante
+///  F8  consola de desarrollador (ver DevConsole)
+///  F9/F10/F11  teletransporte norte / sur / base (solo en Mars)
+/// </summary>
 public class VictoryCheat : MonoBehaviour
 {
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Bootstrap()
     {
+        if (!Debug.isDebugBuild) return;
         if (FindFirstObjectByType<VictoryCheat>() != null) return;
 
         GameObject cheat = new GameObject("VictoryCheat");
@@ -16,36 +24,27 @@ public class VictoryCheat : MonoBehaviour
     private void Update()
     {
         Keyboard keyboard = Keyboard.current;
-        if (keyboard == null) return;
+        if (keyboard == null || UIModal.IsOpen) return;
 
-        if (keyboard.f8Key.wasPressedThisFrame) GiveRepairMaterials();
         if (keyboard.f7Key.wasPressedThisFrame) InstantRepair();
 
-        // Teletransporte para probar biomas (solo si el mapa es grande)
         if (keyboard.f9Key.wasPressedThisFrame) Teleport(new Vector3(0f, 0f, 450f), "Mesetas de Polvo (norte)");
         if (keyboard.f10Key.wasPressedThisFrame) Teleport(new Vector3(0f, 0f, -450f), "Cuenca Fría (sur)");
         if (keyboard.f11Key.wasPressedThisFrame) Teleport(new Vector3(5f, 0f, -11.5f), "Base");
     }
 
-    private void Teleport(Vector3 flat, string label)
+    public static void Teleport(Vector3 flat, string label)
     {
         if (BiomeMap.Instance == null) return; // solo en escenas con biomas (Mars)
         Inventory inventory = FindFirstObjectByType<Inventory>();
         if (inventory == null) return;
 
-        Vector3 target = flat + Vector3.up * 2f;
-        if (Physics.Raycast(new Vector3(flat.x, 1000f, flat.z), Vector3.down, out RaycastHit hit, 2000f, ~0, QueryTriggerInteraction.Ignore))
-            target = hit.point + Vector3.up * 1.2f;
-
-        CharacterController controller = inventory.GetComponent<CharacterController>();
-        if (controller != null) controller.enabled = false;
-        inventory.transform.position = target;
-        if (controller != null) controller.enabled = true;
+        new TeleportCommand(inventory.transform, flat).Execute();
         NotificationQueue.Enqueue($"[DEBUG] Teletransporte: {label}");
     }
 
     // F7: carga los materiales y los deposita en la nave sin tener que ir hasta ella.
-    private void InstantRepair()
+    public static void InstantRepair()
     {
         if (GameManager.Instance == null || !GameManager.Instance.IsPlaying) return;
 
@@ -53,27 +52,15 @@ public class VictoryCheat : MonoBehaviour
         Inventory inventory = FindFirstObjectByType<Inventory>();
         if (shipRepair == null || inventory == null || shipRepair.IsRepaired) return;
 
-        GiveRepairMaterials();
-        shipRepair.Deposit(inventory);
-    }
-
-    private void GiveRepairMaterials()
-    {
-        if (GameManager.Instance == null || !GameManager.Instance.IsPlaying) return;
-
-        ShipRepair shipRepair = FindFirstObjectByType<ShipRepair>();
-        Inventory inventory = FindFirstObjectByType<Inventory>();
-        if (shipRepair == null || inventory == null || shipRepair.IsRepaired) return;
-
-        foreach (RepairRequirement requirement in shipRepair.Requirements)
+        // La mochila tiene tope: se carga y deposita de a tandas hasta completar.
+        for (int i = 0; i < 50 && !shipRepair.IsRepaired; i++)
         {
-            int missing = requirement.amount
-                          - shipRepair.GetDelivered(requirement.resourceType)
-                          - inventory.GetAmount(requirement.resourceType);
-
-            if (missing > 0) inventory.Add(requirement.resourceType, missing);
+            float before = shipRepair.Progress;
+            new GiveRepairMaterialsCommand(inventory, shipRepair).Execute();
+            shipRepair.Deposit(inventory);
+            if (Mathf.Approximately(before, shipRepair.Progress)) break;
         }
-
-        NotificationQueue.Enqueue("[DEBUG] Materiales cargados: andá a la nave y presioná E");
+        NotificationQueue.Clear(); // evita 15 carteles seguidos de "Nave reparada al X%"
+        NotificationQueue.Enqueue(shipRepair.IsRepaired ? "[DEBUG] Nave reparada" : "[DEBUG] No se pudo completar: vaciá la mochila");
     }
 }

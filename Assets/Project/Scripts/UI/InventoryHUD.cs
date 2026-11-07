@@ -87,6 +87,7 @@ public class InventoryHUD : MonoBehaviour
               .Append(pair.Key.displayName).Append("</color>: ").Append(pair.Value).AppendLine();
         }
 
+        sb.AppendLine().Append("<size=18><color=#888888>[Tab] abrir inventario</color></size>");
         text.text = sb.ToString().TrimEnd();
         panel.sizeDelta = new Vector2(300f, text.preferredHeight + 24f);
     }

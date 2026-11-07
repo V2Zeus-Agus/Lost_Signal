@@ -15,6 +15,6 @@ MonoBehaviour:
   id: iron
   displayName: Hierro
   uiColor: {r: 0.75, g: 0.82, b: 0.95, a: 1}
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 9325108a4d207e3409c80a592f807f74, type: 3}
   category: 0
   maxStack: 50

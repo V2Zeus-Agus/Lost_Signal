@@ -41,10 +41,12 @@ public class PlayerInputHandler : MonoBehaviour
 
     private void Update()
     {
-        if (pauseAction.action.WasPressedThisFrame())
+        // Con un panel abierto (inventario, consola) Esc lo cierra el panel, no pausa.
+        bool panelOpen = UIModal.IsOpen || UIModal.LastChangeFrame == Time.frameCount;
+        if (pauseAction.action.WasPressedThisFrame() && !panelOpen)
             GameManager.Instance.TogglePause();
 
-        if (!GameManager.Instance.IsPlaying)
+        if (!GameManager.Instance.IsPlaying || UIModal.IsOpen)
         {
             playerController.SetMoveInput(Vector2.zero);
             playerController.SetSprint(false);

@@ -4,7 +4,8 @@ using UnityEngine;
 public class Stamina : MonoBehaviour
 {
     [SerializeField] private float maxStamina = 100f;
-    [SerializeField] private float drainPerSecond = 25f;
+    [Tooltip("Gasto por segundo corriendo. 6.25 = dura el cuádruple que antes (25).")]
+    [SerializeField] private float drainPerSecond = 6.25f;
     [SerializeField] private float regenPerSecond = 24f;
     [SerializeField] private float regenDelay = 1f;
     [SerializeField] private float minToSprintAgain = 20f;

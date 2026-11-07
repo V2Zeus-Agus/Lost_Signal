@@ -41,9 +41,23 @@ public class Inventory : MonoBehaviour
 
     public int BackpackLevel => upgrades != null ? upgrades.GetLevel(UpgradeIds.Backpack) : 0;
 
+    private bool unlimitedOverride;
+
+    /// <summary>Solo para la consola de desarrollador: saca el tope de items de la mochila.</summary>
+    public bool UnlimitedOverride
+    {
+        get => unlimitedOverride;
+        set
+        {
+            unlimitedOverride = value;
+            Container.SetMaxTotalItems(CurrentMaxItems());
+            OnCapacityChanged?.Invoke();
+        }
+    }
+
     private int CurrentMaxItems()
     {
-        if (maxItems <= 0) return 0; // sin tope
+        if (maxItems <= 0 || unlimitedOverride) return 0; // sin tope
         return Mathf.Min(maxItems + BackpackLevel * itemsPerBackpackLevel, Mathf.Max(absoluteMaxItems, maxItems));
     }
 

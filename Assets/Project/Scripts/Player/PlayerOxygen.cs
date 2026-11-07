@@ -102,6 +102,13 @@ public class PlayerOxygen : MonoBehaviour
         health.TakeDamage(damage);
     }
 
+    /// <summary>Llena el tanque (consola de desarrollador, futuras recargas).</summary>
+    public void Refill()
+    {
+        Current = Max;
+        OnOxygenChanged?.Invoke(Current, Max);
+    }
+
     private void HandleUpgradeChanged(string upgradeId, int level)
     {
         if (upgradeId != UpgradeIds.OxygenTank) return;

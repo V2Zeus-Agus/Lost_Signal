@@ -22,7 +22,7 @@ public class BiomeMap : MonoBehaviour
     [SerializeField] private float southStart = -260f;
     [SerializeField] private float southFull = -380f;
     [Tooltip("Temperatura en el extremo sur del mapa.")]
-    [SerializeField] private float deepSouthTemperature = -120f;
+    [SerializeField] private float deepSouthTemperature = -100f;
     [SerializeField] private float mapSouthEdge = -590f;
 
     [Header("Referencias")]

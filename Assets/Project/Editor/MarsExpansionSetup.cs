@@ -68,13 +68,13 @@ public static class MarsExpansionSetup
             ItemDefinition iron = LoadItem("Iron");
             ItemDefinition crystal = LoadItem("Crystal");
             ItemDefinition fuel = LoadItem("Fuel");
-            ItemDefinition silicon = EnsureItem("Silicon", "silicon", "Silicio", new Color(0.62f, 0.7f, 0.88f));
+            ItemDefinition silicon = EnsureItem("Silicon", "silicon", "Silicio", new Color(0.35f, 1f, 0.25f));
             ItemDefinition sulfur = EnsureItem("Sulfur", "sulfur", "Azufre", new Color(1f, 0.9f, 0.15f));
 
             GameObject ironNode = AssetDatabase.LoadAssetAtPath<GameObject>(NodeFolder + "/IronNode.prefab");
             GameObject crystalNode = AssetDatabase.LoadAssetAtPath<GameObject>(NodeFolder + "/CrystalNode.prefab");
             GameObject fuelNode = AssetDatabase.LoadAssetAtPath<GameObject>(NodeFolder + "/FuelNode.prefab");
-            GameObject siliconNode = EnsureNodePrefab("SiliconNode", ironNode, silicon, NodeMaterial("SiliconOre", new Color(0.55f, 0.62f, 0.78f), 0.9f, 0.7f));
+            GameObject siliconNode = EnsureNodePrefab("SiliconNode", ironNode, silicon, NodeMaterial("SiliconOre", new Color(0.3f, 0.95f, 0.2f), 0.2f, 0.5f, emissive: true));
             GameObject sulfurNode = EnsureNodePrefab("SulfurNode", crystalNode, sulfur, NodeMaterial("SulfurOre", new Color(1f, 0.85f, 0.1f), 0.1f, 0.35f, emissive: true));
 
             EditorUtility.DisplayProgressBar("Mars", "Terreno x3 con biomas...", 0.15f);
@@ -240,8 +240,8 @@ public static class MarsExpansionSetup
 
         SerializedProperty levels = so.FindProperty("levels");
         levels.ClearArray();
-        AddLevel(levels, 0, "+10 items (40)", (iron, 15), (silicon, 5));
-        AddLevel(levels, 1, "+10 items (50)", (iron, 20), (silicon, 10), (sulfur, 3));
+        AddLevel(levels, 0, "+10 items (40)", (iron, 9), (silicon, 3));
+        AddLevel(levels, 1, "+10 items (50)", (iron, 12), (silicon, 6), (sulfur, 2));
         so.ApplyModifiedPropertiesWithoutUndo();
 
         EditorSceneManager.MarkSceneDirty(scene);
@@ -249,8 +249,8 @@ public static class MarsExpansionSetup
         Selection.activeGameObject = shop;
         EditorUtility.DisplayDialog("Mars",
             "Tienda de mochila creada al lado de la estación de O2.\n\n" +
-            "• Nivel 1 (40 items): 15 Hierro + 5 Silicio\n" +
-            "• Nivel 2 (50 items): 20 Hierro + 10 Silicio + 3 Azufre\n\n" +
+            "• Nivel 1 (40 items): 9 Hierro + 3 Silicio\n" +
+            "• Nivel 2 (50 items): 12 Hierro + 6 Silicio + 2 Azufre\n\n" +
             "Los costos se pueden cambiar en el Inspector (UpgradeStation).", "OK");
     }
 
@@ -268,6 +268,206 @@ public static class MarsExpansionSetup
             entry.FindPropertyRelative("item").objectReferenceValue = cost[i].item;
             entry.FindPropertyRelative("amount").intValue = cost[i].amount;
         }
+    }
+
+    // ======================================================================
+    // Ajustes de balance: clima, stamina, nidos, recursos, mochila, silicio
+    // ======================================================================
+
+    private const int NorthNests = 1;
+    private const float NestSpacing = 110f;
+    private const float NestMinDistanceFromBase = 70f;
+
+    [MenuItem("Tools/Lost Signal/Mars/Ajustes: clima, nidos, recursos, mochila")]
+    public static void ApplyBalanceUpdate()
+    {
+        if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+        var report = new System.Text.StringBuilder();
+
+        // 1) Silicio con un color que contraste mucho con el hierro (verde lima).
+        ItemDefinition silicon = EnsureItem("Silicon", "silicon", "Silicio", new Color(0.35f, 1f, 0.25f));
+        NodeMaterial("SiliconOre", new Color(0.3f, 0.95f, 0.2f), 0.2f, 0.5f, emissive: true);
+        report.AppendLine("• Silicio: verde lima (nodos y HUD)");
+
+        // 2) Temperaturas de los biomas.
+        string biomeFolder = SoFolder + "/Biomes";
+        SetBiomeTemperature(biomeFolder + "/Mars_Base.asset", -10f);
+        SetBiomeTemperature(biomeFolder + "/Mars_DustMesas.asset", 15f);
+        SetBiomeTemperature(biomeFolder + "/Mars_ColdBasin.asset", -100f);
+        report.AppendLine("• Temperaturas: centro -10 °C, norte 15 °C, sur -100 °C");
+
+        // 3) Stamina en el tutorial (la escena Mars se ajusta abajo).
+        Scene tutorial = EditorSceneManager.OpenScene("Assets/Scenes/SampleScene.unity");
+        SetStaminaDrain();
+        EditorSceneManager.MarkSceneDirty(tutorial);
+        EditorSceneManager.SaveScene(tutorial);
+
+        Scene scene = EditorSceneManager.OpenScene(MarsScenePath);
+        SetStaminaDrain();
+        report.AppendLine("• Stamina: se gasta 4 veces más lento (recarga igual)");
+
+        GameObject ground = GameObject.Find("Ground");
+        GameObject ship = GameObject.Find("Ship");
+        Collider groundCollider = ground != null ? ground.GetComponent<Collider>() : null;
+        Vector3 shipFlat = ship != null ? new Vector3(ship.transform.position.x, 0f, ship.transform.position.z) : Vector3.zero;
+
+        // 4) BiomeMap: el extremo sur también a -100.
+        BiomeMap biomeMap = Object.FindFirstObjectByType<BiomeMap>(FindObjectsInactive.Include);
+        if (biomeMap != null)
+        {
+            var so = new SerializedObject(biomeMap);
+            so.FindProperty("deepSouthTemperature").floatValue = -100f;
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        // 5) Frío extremo: visor congelado + daño muy lento.
+        Inventory inventory = Object.FindFirstObjectByType<Inventory>(FindObjectsInactive.Include);
+        if (inventory != null && inventory.GetComponent<ColdExposure>() == null)
+            inventory.gameObject.AddComponent<ColdExposure>();
+        report.AppendLine("• Frío: el visor se congela; tras 20 s, -1 de vida cada 4 s");
+
+        // 6) Mochila 40% más barata.
+        foreach (UpgradeStation station in Object.FindObjectsByType<UpgradeStation>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+        {
+            var so = new SerializedObject(station);
+            if (so.FindProperty("upgradeId").stringValue != UpgradeIds.Backpack) continue;
+            SerializedProperty levels = so.FindProperty("levels");
+            levels.ClearArray();
+            AddLevel(levels, 0, "+10 items (40)", (LoadItem("Iron"), 9), (silicon, 3));
+            AddLevel(levels, 1, "+10 items (50)", (LoadItem("Iron"), 12), (silicon, 6), (LoadItem("Sulfur"), 2));
+            so.ApplyModifiedPropertiesWithoutUndo();
+            report.AppendLine("• Mochila: 9 Hierro + 3 Silicio / 12 Hierro + 6 Silicio + 2 Azufre");
+        }
+
+        // 7) Nidos repartidos por todo el mapa: ninguno al sur, uno solo al norte.
+        if (groundCollider != null)
+            report.AppendLine(RedistributeNests(groundCollider, shipFlat));
+
+        // 8) Vetas extra: +40 hierro y +30 silicio.
+        if (groundCollider != null)
+        {
+            Transform parent = GameObject.Find("Expansion")?.transform;
+            GameObject oldExtra = GameObject.Find("ExtraVeins");
+            if (oldExtra != null) Object.DestroyImmediate(oldExtra);
+            Transform extra = new GameObject("ExtraVeins").transform;
+            if (parent != null) extra.SetParent(parent);
+
+            Random.InitState(777);
+            var centers = new List<Vector3>();
+            int iron = PlaceExtraVeins(extra, groundCollider, shipFlat, AssetDatabase.LoadAssetAtPath<GameObject>(NodeFolder + "/IronNode.prefab"), 40, 5, centers);
+            int si = PlaceExtraVeins(extra, groundCollider, shipFlat, AssetDatabase.LoadAssetAtPath<GameObject>(NodeFolder + "/SiliconNode.prefab"), 30, 5, centers);
+            report.AppendLine($"• Vetas extra: +{iron} Hierro, +{si} Silicio");
+        }
+
+        Phase0Setup.AssignSaveIds();
+        EditorSceneManager.MarkSceneDirty(scene);
+        EditorSceneManager.SaveScene(scene);
+        AssetDatabase.SaveAssets();
+
+        Debug.Log("[Mars] Ajustes aplicados:\n" + report);
+        EditorUtility.DisplayDialog("Mars", "Ajustes aplicados:\n" + report, "OK");
+    }
+
+    private static void SetBiomeTemperature(string path, float celsius)
+    {
+        BiomeDefinition biome = AssetDatabase.LoadAssetAtPath<BiomeDefinition>(path);
+        if (biome == null) return;
+        biome.temperatureCelsius = celsius;
+        EditorUtility.SetDirty(biome);
+    }
+
+    private static void SetStaminaDrain()
+    {
+        foreach (Stamina stamina in Object.FindObjectsByType<Stamina>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+        {
+            var so = new SerializedObject(stamina);
+            so.FindProperty("drainPerSecond").floatValue = 6.25f; // antes 25: dura el cuádruple
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+    }
+
+    private static string RedistributeNests(Collider ground, Vector3 shipFlat)
+    {
+        CreatureNest[] nests = Object.FindObjectsByType<CreatureNest>(FindObjectsInactive.Include, FindObjectsSortMode.InstanceID);
+        if (nests.Length == 0) return "• Nidos: no hay en la escena";
+
+        Random.InitState(2024);
+        var chosen = new List<Vector3>();
+        int bandTarget = nests.Length - NorthNests;
+
+        // Franja central y costados (ni el sur ni el norte lejano), bien separados entre sí.
+        float spacing = NestSpacing;
+        for (int attempt = 0; attempt < 4 && chosen.Count < bandTarget; attempt++)
+        {
+            for (int i = 0; i < 6000 && chosen.Count < bandTarget; i++)
+            {
+                float x = Random.Range(-NewMapHalf + 30f, NewMapHalf - 30f);
+                float z = Random.Range(SouthStart + 40f, NorthStart - 10f); // nada en la Cuenca Fría
+                if (!TryNestPoint(ground, shipFlat, x, z, spacing, chosen, out Vector3 p)) continue;
+                chosen.Add(p);
+            }
+            spacing *= 0.8f; // si no entran todos, se relaja la separación
+        }
+
+        // Uno solo en las Mesetas de Polvo.
+        for (int i = 0; i < 2000 && chosen.Count < nests.Length; i++)
+        {
+            float x = Random.Range(-NewMapHalf + 60f, NewMapHalf - 60f);
+            float z = Random.Range(NorthFull, NewMapHalf - 40f);
+            if (!TryNestPoint(ground, shipFlat, x, z, 0f, chosen, out Vector3 p)) continue;
+            chosen.Add(p);
+            break;
+        }
+
+        int moved = 0, removed = 0;
+        for (int i = 0; i < nests.Length; i++)
+        {
+            if (i < chosen.Count) { nests[i].transform.position = chosen[i]; moved++; }
+            else { Object.DestroyImmediate(nests[i].gameObject); removed++; }
+        }
+        return $"• Nidos: {moved} repartidos (1 al norte, 0 al sur)" + (removed > 0 ? $", {removed} quitados por falta de lugar" : "");
+    }
+
+    private static bool TryNestPoint(Collider ground, Vector3 shipFlat, float x, float z, float spacing, List<Vector3> chosen, out Vector3 point)
+    {
+        point = Vector3.zero;
+        if (Vector3.Distance(new Vector3(x, 0f, z), shipFlat) < NestMinDistanceFromBase) return false;
+        foreach (Vector3 c in chosen)
+            if (new Vector2(c.x - x, c.z - z).sqrMagnitude < spacing * spacing) return false;
+        if (!GroundPoint(ground, x, z, 0.85f, out point)) return false;
+        point += Vector3.up * 0.5f;
+        return true;
+    }
+
+    private static int PlaceExtraVeins(Transform parent, Collider ground, Vector3 shipFlat, GameObject prefab, int total, int perVein, List<Vector3> centers)
+    {
+        if (prefab == null) return 0;
+        int placed = 0;
+        for (int tries = 0; tries < 3000 && placed < total; tries++)
+        {
+            float x = Random.Range(-NewMapHalf + 40f, NewMapHalf - 40f);
+            float z = Random.Range(-NewMapHalf + 40f, NewMapHalf - 40f);
+            var c = new Vector3(x, 0f, z);
+            if (Vector3.Distance(c, shipFlat) < 50f) continue;
+            bool tooClose = false;
+            foreach (Vector3 other in centers)
+                if ((other - c).sqrMagnitude < 60f * 60f) { tooClose = true; break; }
+            if (tooClose) continue;
+
+            int here = 0;
+            for (int i = 0; i < perVein * 4 && here < perVein && placed < total; i++)
+            {
+                Vector2 offset = Random.insideUnitCircle * 9f;
+                if (!GroundPoint(ground, x + offset.x, z + offset.y, 0.85f, out Vector3 point)) continue;
+                var node = (GameObject)PrefabUtility.InstantiatePrefab(prefab, parent);
+                node.transform.position = point;
+                node.transform.rotation = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);
+                here++;
+                placed++;
+            }
+            if (here > 0) centers.Add(c);
+        }
+        return placed;
     }
 
     // ======================================================================
@@ -735,11 +935,11 @@ public static class MarsExpansionSetup
         if (!AssetDatabase.IsValidFolder(folder)) AssetDatabase.CreateFolder(SoFolder, "Biomes");
 
         BiomeDefinition baseBiome = EnsureBiome(folder, "Mars_Base", "Llanuras de Marte",
-            new Color(0.55f, 0.32f, 0.22f), 0.0045f, new Color(1f, 0.9f, 0.8f), 1.3f, 0f, -60f);
+            new Color(0.55f, 0.32f, 0.22f), 0.0045f, new Color(1f, 0.9f, 0.8f), 1.3f, 0f, -10f);
         BiomeDefinition north = EnsureBiome(folder, "Mars_DustMesas", "Mesetas de Polvo",
-            new Color(0.74f, 0.52f, 0.33f), 0.012f, new Color(1f, 0.82f, 0.62f), 1.05f, 1f, -45f);
+            new Color(0.74f, 0.52f, 0.33f), 0.012f, new Color(1f, 0.82f, 0.62f), 1.05f, 1f, 15f);
         BiomeDefinition south = EnsureBiome(folder, "Mars_ColdBasin", "Cuenca Fría",
-            new Color(0.46f, 0.49f, 0.56f), 0.0065f, new Color(0.82f, 0.88f, 1f), 1.1f, 0.1f, -90f);
+            new Color(0.46f, 0.49f, 0.56f), 0.0065f, new Color(0.82f, 0.88f, 1f), 1.1f, 0.1f, -100f);
 
         GameObject go = GameObject.Find("BiomeMap");
         if (go == null) go = new GameObject("BiomeMap");

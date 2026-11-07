@@ -15,6 +15,6 @@ MonoBehaviour:
   id: crystal
   displayName: Cristal
   uiColor: {r: 0.3, g: 0.95, b: 1, a: 1}
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: ee09350f829751743b654082844d4f76, type: 3}
   category: 0
   maxStack: 50

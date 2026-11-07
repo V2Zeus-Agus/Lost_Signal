@@ -14,6 +14,9 @@ public class ItemContainer
     /// <summary>Se dispara cuando cambia la cantidad total de un item (item, nuevo total).</summary>
     public event Action<ItemDefinition, int> OnItemChanged;
 
+    /// <summary>Se dispara ante cualquier cambio de slots (agregar, sacar, mover, combinar). Lo escucha la UI.</summary>
+    public event Action OnSlotsChanged;
+
     /// <param name="maxTotalItems">Tope de items sumando todo el contenedor. 0 = sin tope.</param>
     public ItemContainer(int slotCount, int maxTotalItems = 0)
     {
@@ -194,8 +197,10 @@ public class ItemContainer
 
                 if (stack.slot >= 0 && stack.slot < slots.Count && slots[stack.slot].IsEmpty)
                 {
+                    int put = Mathf.Min(stack.amount, item.maxStack);
                     slots[stack.slot].item = item;
-                    slots[stack.slot].amount = Mathf.Min(stack.amount, item.maxStack);
+                    slots[stack.slot].amount = put;
+                    if (stack.amount > put) Add(item, stack.amount - put); // lo que sobra no se pierde
                 }
                 else
                 {
@@ -206,7 +211,87 @@ public class ItemContainer
         }
 
         foreach (ItemDefinition item in touched) Notify(item);
+        OnSlotsChanged?.Invoke();
     }
 
-    private void Notify(ItemDefinition item) => OnItemChanged?.Invoke(item, GetAmount(item));
+    // ---------- Operaciones por slot (inventario interactuable) ----------
+
+    public bool IsValidSlot(int index) => index >= 0 && index < slots.Count;
+
+    /// <summary>
+    /// Mueve el contenido de un slot a otro. Si el destino tiene el mismo item, combina
+    /// hasta llenar la pila (lo que no entra queda en el origen); si tiene otro item, los intercambia.
+    /// No cambia los totales, así que no dispara OnItemChanged.
+    /// </summary>
+    public bool MoveSlot(int from, int to)
+    {
+        if (from == to || !IsValidSlot(from) || !IsValidSlot(to)) return false;
+        ItemStack source = slots[from];
+        ItemStack target = slots[to];
+        if (source.IsEmpty) return false;
+
+        if (target.IsEmpty)
+        {
+            target.item = source.item;
+            target.amount = source.amount;
+            source.Clear();
+        }
+        else if (target.item == source.item)
+        {
+            int put = Mathf.Min(source.amount, target.item.maxStack - target.amount);
+            if (put <= 0) return false;
+            target.amount += put;
+            source.amount -= put;
+            if (source.amount <= 0) source.Clear();
+        }
+        else
+        {
+            ItemDefinition item = target.item;
+            int amount = target.amount;
+            target.item = source.item;
+            target.amount = source.amount;
+            source.item = item;
+            source.amount = amount;
+        }
+
+        OnSlotsChanged?.Invoke();
+        return true;
+    }
+
+    /// <summary>Divide una pila a la mitad y manda la mitad al primer slot vacío.</summary>
+    public bool SplitSlot(int index)
+    {
+        if (!IsValidSlot(index) || slots[index].IsEmpty || slots[index].amount < 2) return false;
+        int empty = slots.FindIndex(s => s.IsEmpty);
+        if (empty < 0) return false;
+
+        ItemStack source = slots[index];
+        int half = source.amount / 2;
+        source.amount -= half;
+        slots[empty].item = source.item;
+        slots[empty].amount = half;
+        OnSlotsChanged?.Invoke();
+        return true;
+    }
+
+    /// <summary>Saca unidades de un slot puntual. Devuelve cuántas sacó.</summary>
+    public int RemoveFromSlot(int index, int amount)
+    {
+        if (!IsValidSlot(index) || amount <= 0) return 0;
+        ItemStack slot = slots[index];
+        if (slot.IsEmpty) return 0;
+
+        ItemDefinition item = slot.item;
+        int take = Mathf.Min(amount, slot.amount);
+        slot.amount -= take;
+        if (slot.amount <= 0) slot.Clear();
+        Notify(item);
+        return take;
+    }
+
+    private void Notify(ItemDefinition item)
+    {
+        OnItemChanged?.Invoke(item, GetAmount(item));
+        OnSlotsChanged?.Invoke();
+    }
 }
