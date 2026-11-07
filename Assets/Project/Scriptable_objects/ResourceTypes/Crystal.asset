@@ -12,6 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b1dccd740cf5ae545b914b3d9ba2b599, type: 3}
   m_Name: Crystal
   m_EditorClassIdentifier: Assembly-CSharp::ResourceType
+  id: crystal
   displayName: Cristal
   uiColor: {r: 0.3, g: 0.95, b: 1, a: 1}
   icon: {fileID: 0}
+  category: 0
+  maxStack: 50

@@ -57,9 +57,9 @@ public static class LostSignalSetup
         Folder(Root, "Prefab"); Folder(PrefabFolder, "Enemies"); Folder(PrefabFolder, "Projectiles"); Folder(PrefabFolder, "Nodes");
         Folder(Root, "Materials");
 
-        ResourceType iron = ResourceAsset("Iron", "Hierro");
-        ResourceType crystal = ResourceAsset("Crystal", "Cristal");
-        ResourceType fuel = ResourceAsset("Fuel", "Combustible");
+        ItemDefinition iron = ResourceAsset("Iron", "Hierro");
+        ItemDefinition crystal = ResourceAsset("Crystal", "Cristal");
+        ItemDefinition fuel = ResourceAsset("Fuel", "Combustible");
         iron.uiColor = new Color(0.75f, 0.82f, 0.95f); EditorUtility.SetDirty(iron);
         crystal.uiColor = new Color(0.3f, 0.95f, 1f); EditorUtility.SetDirty(crystal);
         fuel.uiColor = new Color(1f, 0.78f, 0.2f); EditorUtility.SetDirty(fuel);
@@ -221,7 +221,7 @@ public static class LostSignalSetup
         SerializedObject repairSo = new SerializedObject(repair);
         SerializedProperty reqs = repairSo.FindProperty("requirements");
         reqs.ClearArray();
-        ResourceType[] types = { iron, crystal, fuel };
+        ItemDefinition[] types = { iron, crystal, fuel };
         for (int i = 0; i < types.Length; i++)
         {
             reqs.InsertArrayElementAtIndex(i);
@@ -267,7 +267,7 @@ public static class LostSignalSetup
         OxygenShop shopComp = shop.AddComponent<OxygenShop>();
         Set(shopComp, "playerOxygen", oxygen);
         Set(shopComp, "costType", iron);
-        SetFloat(shopComp, "secondsPerUpgrade", 8f);
+        SetFloat(oxygen, "secondsPerTankLevel", 8f);
         SetInt(shopComp, "costPerUpgrade", 3);
 
         GameObject oldMed = GameObject.Find("HealStation"); if (oldMed != null) Object.DestroyImmediate(oldMed);
@@ -283,7 +283,6 @@ public static class LostSignalSetup
         HealStation heal = med.AddComponent<HealStation>();
         Set(heal, "playerHealth", playerHealth);
         SetInt(heal, "maxUses", 2);
-        SetInt(shopComp, "maxUpgrades", 5);
 
         BuildWreck(iron, crystal, fuel);
 
@@ -672,7 +671,7 @@ public static class LostSignalSetup
         animator.cullingMode = AnimatorCullingMode.CullUpdateTransforms;
     }
 
-    private static void BuildWreck(ResourceType iron, ResourceType crystal, ResourceType fuel)
+    private static void BuildWreck(ItemDefinition iron, ItemDefinition crystal, ItemDefinition fuel)
     {
         GameObject old = GameObject.Find("WreckedShip"); if (old != null) Object.DestroyImmediate(old);
         GameObject wreck = new GameObject("WreckedShip");
@@ -698,7 +697,7 @@ public static class LostSignalSetup
         SerializedObject so = new SerializedObject(salvage);
         SerializedProperty list = so.FindProperty("rewards");
         list.ClearArray();
-        (ResourceType type, int amount)[] rewards = { (iron, 12), (fuel, 8), (crystal, 3) };
+        (ItemDefinition type, int amount)[] rewards = { (iron, 12), (fuel, 8), (crystal, 3) };
         for (int i = 0; i < rewards.Length; i++)
         {
             list.InsertArrayElementAtIndex(i);
@@ -1229,15 +1228,15 @@ public static class LostSignalSetup
         return asset;
     }
 
-    private static ResourceType ResourceAsset(string file, string display)
+    private static ItemDefinition ResourceAsset(string file, string display)
     {
-        ResourceType t = LoadOrCreate<ResourceType>($"{SoFolder}/ResourceTypes/{file}.asset");
+        ItemDefinition t = LoadOrCreate<ItemDefinition>($"{SoFolder}/ResourceTypes/{file}.asset");
         t.displayName = display;
         EditorUtility.SetDirty(t);
         return t;
     }
 
-    private static GameObject NodePrefab(string name, string model, float size, Material overrideMat, ResourceType type)
+    private static GameObject NodePrefab(string name, string model, float size, Material overrideMat, ItemDefinition type)
     {
         GameObject go = new GameObject(name);
         Bounds b = AddModel(go.transform, model, size, overrideMat);

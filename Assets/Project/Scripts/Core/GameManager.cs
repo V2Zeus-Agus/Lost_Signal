@@ -15,6 +15,14 @@ public class GameManager : MonoBehaviour
     [Header("Scenes")]
     [SerializeField] private string mainMenuScene = "MainMenu";
 
+    [Header("Flujo de escena")]
+    [Tooltip("Mostrar el panel de introducción/controles al empezar (el tutorial lo usa).")]
+    [SerializeField] private bool showIntroPanel = true;
+    [Tooltip("Si está activo, reparar la nave termina la escena con victoria (tutorial).")]
+    [SerializeField] private bool endsOnShipRepaired = true;
+    [Tooltip("Escena que se carga con 'Continuar' tras la victoria. Vacío = no hay siguiente.")]
+    [SerializeField] private string nextSceneOnVictory = "";
+
     public GameState State { get; private set; } = GameState.Tutorial;
     public bool IsPlaying => State == GameState.Playing;
 
@@ -40,7 +48,7 @@ public class GameManager : MonoBehaviour
     private void OnEnable()
     {
         if (playerHealth != null) playerHealth.OnDied += Lose;
-        if (shipRepair != null) shipRepair.OnRepaired += Win;
+        if (shipRepair != null && endsOnShipRepaired) shipRepair.OnRepaired += Win;
     }
 
     private void OnDisable()
@@ -54,7 +62,16 @@ public class GameManager : MonoBehaviour
         if (Instance == this) Instance = null;
     }
 
-    private void Start() => SetState(GameState.Tutorial);
+    private void Start() => SetState(showIntroPanel ? GameState.Tutorial : GameState.Playing);
+
+    public bool HasNextScene => !string.IsNullOrEmpty(nextSceneOnVictory);
+
+    public void LoadNextScene()
+    {
+        if (!HasNextScene) return;
+        Time.timeScale = 1f;
+        SceneManager.LoadScene(nextSceneOnVictory);
+    }
 
     public void StartGame()
     {
@@ -75,6 +92,7 @@ public class GameManager : MonoBehaviour
 
     public void GoToMainMenu()
     {
+        if (SaveManager.Instance != null) SaveManager.Instance.SaveGame();
         Time.timeScale = 1f;
         SceneManager.LoadScene(mainMenuScene);
     }

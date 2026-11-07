@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 63c339bc7b52f61428e2e180e1ef1a8b, type: 3}
+  m_Name: Mars_DustMesas
+  m_EditorClassIdentifier: Assembly-CSharp::BiomeDefinition
+  displayName: Mesetas de Polvo
+  fogColor: {r: 0.74, g: 0.52, b: 0.33, a: 1}
+  fogDensity: 0.012
+  sunColor: {r: 1, g: 0.82, b: 0.62, a: 1}
+  sunIntensity: 1.05
+  dust: 1
+  dustColor: {r: 0.88, g: 0.66, b: 0.45, a: 0.4}
+  temperatureCelsius: 20

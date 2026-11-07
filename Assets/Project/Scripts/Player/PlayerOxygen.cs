@@ -3,16 +3,26 @@ using UnityEngine;
 
 public class PlayerOxygen : MonoBehaviour
 {
+    [Tooltip("Capacidad base del tanque, sin mejoras.")]
     [SerializeField] private float maxOxygen = 20f;
+    [Tooltip("Segundos extra por nivel en los niveles 1-4 del tanque (después rige OxygenTankProgression).")]
+    [SerializeField] private float secondsPerTankLevel = 8f;
     [SerializeField] private float refillPerSecond = 10f;
     [SerializeField] private Transform safeZoneCenter;
     [SerializeField] private float safeZoneRadius = 10f;
     [SerializeField] private Health health;
+    [SerializeField] private PlayerUpgrades upgrades;
     [SerializeField] private float suffocationSeconds = 2f;
 
     public float Current { get; private set; }
-    public float Max => maxOxygen;
+    public float Max => maxOxygen + OxygenTankProgression.TotalBonus(TankLevel, secondsPerTankLevel);
+    public float SecondsPerTankLevel => secondsPerTankLevel;
+    public int TankLevel => upgrades != null ? upgrades.GetLevel(UpgradeIds.OxygenTank) : 0;
+
+    /// <summary>Segundos que agregaría el próximo nivel del tanque.</summary>
+    public float NextLevelSeconds => OxygenTankProgression.SecondsForLevel(TankLevel + 1, secondsPerTankLevel);
     public bool InSafeZone { get; private set; }
+
 
     public event Action<float, float> OnOxygenChanged;
     public event Action<bool> OnRefillingChanged;
@@ -23,33 +33,47 @@ public class PlayerOxygen : MonoBehaviour
 
     private void Awake()
     {
-        Current = maxOxygen;
+        if (upgrades == null) upgrades = GetComponent<PlayerUpgrades>();
+        Current = Max;
+    }
+
+    private void OnEnable()
+    {
+        if (upgrades != null) upgrades.OnUpgradeChanged += HandleUpgradeChanged;
+    }
+
+    private void OnDisable()
+    {
+        if (upgrades != null) upgrades.OnUpgradeChanged -= HandleUpgradeChanged;
     }
 
     private void Update()
     {
         if (health.IsDead || !GameManager.Instance.IsPlaying) return;
 
+        float max = Max;
         InSafeZone = IsNearShip();
 
         if (InSafeZone)
         {
-            Current = Mathf.Min(Current + refillPerSecond * Time.deltaTime, maxOxygen);
-            if (Current >= maxOxygen * 0.5f) lowWarningShown = false;
+            Current = Mathf.Min(Current + refillPerSecond * Time.deltaTime, max);
+            if (Current >= max * 0.5f) lowWarningShown = false;
         }
         else
         {
-            Current = Mathf.Max(Current - Time.deltaTime, 0f);
-            if (!lowWarningShown && Current <= maxOxygen * 0.25f)
+            // El planeta define qué tan rápido se va el aire (x2 = dura la mitad).
+            float drain = Time.deltaTime * PlanetContext.OxygenDrainMultiplier;
+            Current = Mathf.Max(Current - drain, 0f);
+            if (!lowWarningShown && Current <= max * 0.25f)
             {
                 lowWarningShown = true;
                 NotificationQueue.Enqueue("¡Oxígeno bajo! Volvé a la nave");
             }
         }
 
-        OnOxygenChanged?.Invoke(Current, maxOxygen);
+        OnOxygenChanged?.Invoke(Current, max);
 
-        bool refilling = InSafeZone && Current < maxOxygen;
+        bool refilling = InSafeZone && Current < max;
         if (refilling != isRefilling)
         {
             isRefilling = refilling;
@@ -78,11 +102,12 @@ public class PlayerOxygen : MonoBehaviour
         health.TakeDamage(damage);
     }
 
-    public void UpgradeCapacity(float extraSeconds)
+    private void HandleUpgradeChanged(string upgradeId, int level)
     {
-        maxOxygen += extraSeconds;
-        Current = maxOxygen;
-        OnOxygenChanged?.Invoke(Current, maxOxygen);
+        if (upgradeId != UpgradeIds.OxygenTank) return;
+
+        Current = Max; // mejorar el tanque lo llena, como antes
+        OnOxygenChanged?.Invoke(Current, Max);
     }
 
     private bool IsNearShip()

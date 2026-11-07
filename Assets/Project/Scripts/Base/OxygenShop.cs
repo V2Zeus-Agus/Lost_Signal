@@ -1,35 +1,53 @@
 using UnityEngine;
 
+/// <summary>
+/// Vende niveles de la mejora del tanque de O2 (hasta nivel 10, ver OxygenTankProgression).
+/// El nivel vive en PlayerUpgrades (perfil), así que la mejora se conserva al cambiar de planeta.
+/// </summary>
 public class OxygenShop : MonoBehaviour, IInteractable
 {
     [SerializeField] private PlayerOxygen playerOxygen;
-    [SerializeField] private ResourceType costType;
+    [SerializeField] private PlayerUpgrades playerUpgrades;
+    [SerializeField] private ItemDefinition costType;
+    [Tooltip("Costo de los niveles 1-4.")]
     [SerializeField] private int costPerUpgrade = 3;
-    [SerializeField] private float secondsPerUpgrade = 8f;
-    [SerializeField] private int maxUpgrades = 5;
+    [Tooltip("Costo base desde el nivel 5; se multiplica x1.3 por cada nivel.")]
+    [SerializeField] private int scaledBaseCost = OxygenTankProgression.DefaultScaledBaseCost;
 
-    private int upgradesBought;
+    private int Level => playerUpgrades != null ? playerUpgrades.GetLevel(UpgradeIds.OxygenTank) : 0;
+    private bool IsMaxed => Level >= OxygenTankProgression.MaxLevel;
+    private int NextCost => OxygenTankProgression.CostForLevel(Level + 1, costPerUpgrade, scaledBaseCost);
 
-    private bool IsMaxed => upgradesBought >= maxUpgrades;
+    private void Awake()
+    {
+        if (playerUpgrades == null && playerOxygen != null)
+            playerUpgrades = playerOxygen.GetComponent<PlayerUpgrades>();
+    }
 
     public string GetPrompt() =>
         IsMaxed
-            ? "Tanque de O2 al máximo"
-            : $"[E] Mejorar tanque de O2 (+{secondsPerUpgrade:0} s) · cuesta {costPerUpgrade} {costType.displayName}";
+            ? $"Tanque de O2 al máximo (nivel {OxygenTankProgression.MaxLevel})"
+            : $"[E] Mejorar tanque de O2 a nivel {Level + 1} (+{playerOxygen.NextLevelSeconds:0} s) · cuesta {NextCost} {costType.displayName}";
 
     public void Interact(Inventory inventory)
     {
         if (IsMaxed) return;
 
-        if (inventory.GetAmount(costType) < costPerUpgrade)
+        if (playerUpgrades == null)
         {
-            NotificationQueue.Enqueue($"Necesitás {costPerUpgrade} {costType.displayName}");
+            Debug.LogError("[OxygenShop] Falta PlayerUpgrades en el jugador. Corré Lost Signal > Fase 0 > Configurar escena actual.", this);
             return;
         }
 
-        inventory.Remove(costType, costPerUpgrade);
-        upgradesBought++;
-        playerOxygen.UpgradeCapacity(secondsPerUpgrade);
-        NotificationQueue.Enqueue($"Tanque de O2: {playerOxygen.Max:0} s");
+        int cost = NextCost;
+        if (inventory.GetAmount(costType) < cost)
+        {
+            NotificationQueue.Enqueue($"Necesitás {cost} {costType.displayName}");
+            return;
+        }
+
+        inventory.Remove(costType, cost);
+        playerUpgrades.AddLevel(UpgradeIds.OxygenTank);
+        NotificationQueue.Enqueue($"Tanque de O2 nivel {Level}: {playerOxygen.Max:0} s");
     }
 }

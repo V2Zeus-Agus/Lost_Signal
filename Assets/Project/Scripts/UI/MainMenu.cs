@@ -3,9 +3,14 @@ using UnityEngine.SceneManagement;
 
 public class MainMenu : MonoBehaviour
 {
-    [SerializeField] private string gameScene = "SampleScene";
+    [Tooltip("Escena del juego real (la que guarda la partida).")]
+    [SerializeField] private string gameScene = "Mars";
+    [Tooltip("Escena del tutorial: es por donde arranca una partida nueva.")]
+    [SerializeField] private string tutorialScene = "SampleScene";
     [SerializeField] private GameObject mainPanel;
     [SerializeField] private GameObject optionsPanel;
+    [Tooltip("Se muestra solo si hay una partida guardada.")]
+    [SerializeField] private GameObject continueButton;
 
     private void Start()
     {
@@ -13,9 +18,21 @@ public class MainMenu : MonoBehaviour
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
         OnBackButton();
+
+        if (continueButton != null) continueButton.SetActive(SaveSystem.HasProfile);
     }
 
-    public void OnPlayButton() => SceneManager.LoadScene(gameScene);
+    /// <summary>Nueva partida: borra el guardado y empieza por el tutorial.</summary>
+    public void OnNewGameButton()
+    {
+        SaveSystem.DeleteAll();
+        SceneManager.LoadScene(tutorialScene);
+    }
+
+    public void OnContinueButton() => SceneManager.LoadScene(gameScene);
+
+    // Compatibilidad con el botón "Jugar" que crea el Setup Scene original.
+    public void OnPlayButton() => OnNewGameButton();
 
     public void OnOptionsButton()
     {

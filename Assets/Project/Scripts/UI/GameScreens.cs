@@ -48,4 +48,5 @@ public class GameScreens : MonoBehaviour
 
     public void OnBackButton() => Show(GameManager.Instance.State);
     public void OnMainMenuButton() => GameManager.Instance.GoToMainMenu();
+    public void OnContinueButton() => GameManager.Instance.LoadNextScene();
 }

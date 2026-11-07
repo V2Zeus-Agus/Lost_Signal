@@ -118,13 +118,13 @@ public class HUD : MonoBehaviour
         oxygenText.color = current <= max * 0.25f && !oxygen.InSafeZone ? new Color(1f, 0.35f, 0.3f) : Color.white;
     }
 
-    private void UpdateResources(ResourceType changedType, int newAmount)
+    private void UpdateResources(ItemDefinition changedType, int newAmount)
     {
         builder.Clear();
         builder.AppendLine("<b>PARA REPARAR LA NAVE</b>");
         foreach (RepairRequirement requirement in shipRepair.Requirements)
         {
-            ResourceType type = requirement.resourceType;
+            ItemDefinition type = requirement.resourceType;
             int delivered = shipRepair.GetDelivered(type);
             int missing = Mathf.Max(requirement.amount - delivered, 0);
 

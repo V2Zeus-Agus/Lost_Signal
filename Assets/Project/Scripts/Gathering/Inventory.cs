@@ -1,29 +1,81 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Mochila del jugador. Envuelve un ItemContainer con slots limitados.
+/// Mantiene la misma API que antes (GetAmount / Add / Remove / OnResourceChanged)
+/// para no romper el HUD ni las estaciones.
+/// </summary>
 public class Inventory : MonoBehaviour
 {
-    private readonly Dictionary<ResourceType, int> amounts = new Dictionary<ResourceType, int>();
+    [SerializeField, Min(1)] private int slotCount = 12;
+    [Tooltip("Máximo de items de la mochila sin mejoras, sumando todo. 0 = sin tope.")]
+    [SerializeField, Min(0)] private int maxItems = 30;
+    [Tooltip("Items extra por cada nivel de la mejora de mochila.")]
+    [SerializeField, Min(0)] private int itemsPerBackpackLevel = 10;
+    [Tooltip("Tope absoluto de la mochila con todas las mejoras.")]
+    [SerializeField, Min(0)] private int absoluteMaxItems = 50;
+    [SerializeField] private PlayerUpgrades upgrades;
 
-    public event Action<ResourceType, int> OnResourceChanged;
+    /// <summary>Se dispara cuando cambia la capacidad (mejora de mochila).</summary>
+    public event Action OnCapacityChanged;
 
-    public int GetAmount(ResourceType type) =>
-        amounts.TryGetValue(type, out int amount) ? amount : 0;
+    private ItemContainer container;
 
-    public void Add(ResourceType type, int amount)
+    public event Action<ItemDefinition, int> OnResourceChanged;
+
+    public ItemContainer Container
     {
-        amounts[type] = GetAmount(type) + amount;
-        OnResourceChanged?.Invoke(type, amounts[type]);
+        get
+        {
+            if (container == null)
+            {
+                container = new ItemContainer(slotCount, CurrentMaxItems());
+                container.OnItemChanged += (item, total) => OnResourceChanged?.Invoke(item, total);
+            }
+            return container;
+        }
     }
 
-    public int Remove(ResourceType type, int amount)
-    {
-        int removed = Mathf.Min(amount, GetAmount(type));
-        if (removed <= 0) return 0;
+    public int MaxItems => Container.MaxTotalItems;
 
-        amounts[type] -= removed;
-        OnResourceChanged?.Invoke(type, amounts[type]);
-        return removed;
+    public int BackpackLevel => upgrades != null ? upgrades.GetLevel(UpgradeIds.Backpack) : 0;
+
+    private int CurrentMaxItems()
+    {
+        if (maxItems <= 0) return 0; // sin tope
+        return Mathf.Min(maxItems + BackpackLevel * itemsPerBackpackLevel, Mathf.Max(absoluteMaxItems, maxItems));
     }
+
+    private void Awake()
+    {
+        if (upgrades == null) upgrades = GetComponent<PlayerUpgrades>();
+    }
+
+    private void OnEnable()
+    {
+        if (upgrades != null) upgrades.OnUpgradeChanged += HandleUpgradeChanged;
+    }
+
+    private void OnDisable()
+    {
+        if (upgrades != null) upgrades.OnUpgradeChanged -= HandleUpgradeChanged;
+    }
+
+    private void HandleUpgradeChanged(string upgradeId, int level)
+    {
+        if (upgradeId != UpgradeIds.Backpack) return;
+        Container.SetMaxTotalItems(CurrentMaxItems());
+        OnCapacityChanged?.Invoke();
+    }
+    public int TotalItems => Container.TotalCount;
+
+    public int GetAmount(ItemDefinition type) => Container.GetAmount(type);
+
+    public int GetSpaceFor(ItemDefinition type) => Container.GetSpaceFor(type);
+
+    /// <summary>Devuelve cuánto entró realmente (puede ser menos si la mochila está llena).</summary>
+    public int Add(ItemDefinition type, int amount) => Container.Add(type, amount);
+
+    public int Remove(ItemDefinition type, int amount) => Container.Remove(type, amount);
 }
