@@ -36,6 +36,7 @@ public class InventoryPanel : MonoBehaviour
     private ItemContainer container;
     private int selected = -1;
     private int dragging = -1;
+    private bool dropHandled;
     private bool dirty = true;
 
     public bool IsOpen => canvas != null && canvas.gameObject.activeSelf;
@@ -145,6 +146,7 @@ public class InventoryPanel : MonoBehaviour
     {
         if (!container.IsValidSlot(index) || container.Slots[index].IsEmpty) return;
         dragging = index;
+        dropHandled = false;
         RuntimeUI.SetItemIcon(dragGhost, container.Slots[index].item);
         dragGhost.color = new Color(dragGhost.color.r, dragGhost.color.g, dragGhost.color.b, 0.85f);
         dragGhost.transform.position = screenPosition;
@@ -153,6 +155,22 @@ public class InventoryPanel : MonoBehaviour
     public void UpdateDrag(Vector2 screenPosition)
     {
         if (dragging >= 0) dragGhost.transform.position = screenPosition;
+    }
+
+    /// <summary>
+    /// Fin del arrastre. Si se soltó fuera de la ventana (y no sobre un slot), la pila se tira:
+    /// el item desaparece.
+    /// </summary>
+    public void EndDragAt(Vector2 screenPosition)
+    {
+        int from = dragging;
+        bool outside = !RectTransformUtility.RectangleContainsScreenPoint(window, screenPosition, null);
+        if (from >= 0 && !dropHandled && outside && !container.Slots[from].IsEmpty)
+        {
+            new DiscardFromSlotCommand(container, from, container.Slots[from].amount).Execute();
+            if (selected == from) selected = -1;
+        }
+        EndDrag();
     }
 
     public void EndDrag()
@@ -164,6 +182,7 @@ public class InventoryPanel : MonoBehaviour
     public void DropOn(int from, int to)
     {
         if (dragging < 0 || from != dragging) return;
+        dropHandled = true;
         new MoveSlotCommand(container, from, to).Execute();
         selected = container.Slots[to].IsEmpty ? -1 : to;
         dirty = true;
@@ -284,8 +303,8 @@ public class InventoryPanel : MonoBehaviour
         capacityFill.fillMethod = Image.FillMethod.Horizontal;
 
         TMP_Text hint = RuntimeUI.Text("Hint", window,
-            "<color=#9aa>Arrastrar: mover / combinar / intercambiar · Click derecho: descartar 1 · Tab, I o Esc: cerrar</color>", 18);
-        RuntimeUI.Place(hint.rectTransform, Margin, barY + 30f, gridWidth, 50f);
+            "<color=#9aa>Arrastrar: mover / combinar / intercambiar · Soltar afuera: tirar · Click derecho: descartar 1 · Tab, I o Esc: cerrar</color>", 16);
+        RuntimeUI.Place(hint.rectTransform, Margin, barY + 26f, gridWidth, 72f);
 
         // Detalle
         float dx = Margin + gridWidth + Gap * 2f;

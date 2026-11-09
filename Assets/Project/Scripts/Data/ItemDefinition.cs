@@ -14,6 +14,14 @@ public enum ItemCategory
     Tool
 }
 
+/// <summary>Qué tan escaso es un recurso. Desde Poco común, al morir no se pierde: queda en un cofre.</summary>
+public enum ItemRarity
+{
+    Common,
+    Uncommon,
+    Rare
+}
+
 [CreateAssetMenu(fileName = "NewItem", menuName = "Lost Signal/Item")]
 public class ItemDefinition : ScriptableObject
 {
@@ -24,6 +32,10 @@ public class ItemDefinition : ScriptableObject
     public Sprite icon;
     public ItemCategory category = ItemCategory.RawResource;
     [Min(1)] public int maxStack = 50;
+    public ItemRarity rarity = ItemRarity.Common;
+
+    /// <summary>Poco común o más: se recupera de un cofre al morir.</summary>
+    public bool IsScarce => rarity >= ItemRarity.Uncommon;
 
     public string Id => string.IsNullOrEmpty(id) ? name.ToLowerInvariant() : id;
 

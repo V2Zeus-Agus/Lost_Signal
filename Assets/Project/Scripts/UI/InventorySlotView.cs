@@ -54,7 +54,7 @@ public class InventorySlotView : MonoBehaviour,
 
     public void OnDrag(PointerEventData eventData) => panel.UpdateDrag(eventData.position);
 
-    public void OnEndDrag(PointerEventData eventData) => panel.EndDrag();
+    public void OnEndDrag(PointerEventData eventData) => panel.EndDragAt(eventData.position);
 
     public void OnDrop(PointerEventData eventData)
     {

@@ -31,6 +31,9 @@ public class GameManager : MonoBehaviour
 
     public event Action<GameState> OnStateChanged;
 
+    /// <summary>Justo antes de pasar a Derrota (todavía en Playing): para soltar el cofre, guardar, etc.</summary>
+    public event Action OnPlayerDefeated;
+
 
 
     private void Awake()
@@ -110,7 +113,9 @@ public class GameManager : MonoBehaviour
 
     private void Lose()
     {
-        if (IsPlaying) SetState(GameState.Defeat);
+        if (!IsPlaying) return;
+        OnPlayerDefeated?.Invoke();
+        SetState(GameState.Defeat);
     }
 
     private void SetState(GameState newState)

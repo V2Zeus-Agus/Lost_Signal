@@ -140,6 +140,14 @@ public class DevConsole : MonoBehaviour
             limitLabel.text = inventory.UnlimitedOverride ? "Tope mochila: OFF" : "Tope mochila: ON";
     }
 
+    // Usa el mismo Interact del cofre, como si el jugador fuera hasta cada uno.
+    private void RecoverChests()
+    {
+        DeathChest[] chests = FindObjectsByType<DeathChest>(FindObjectsSortMode.None);
+        foreach (DeathChest chest in chests) chest.Interact(inventory);
+        Log(chests.Length == 0 ? "No hay cofres de muerte" : $"Recuperado lo que entró de {chests.Length} cofre(s)");
+    }
+
     private void EmptyBackpack()
     {
         inventory.Container.Clear();
@@ -246,6 +254,8 @@ public class DevConsole : MonoBehaviour
             ("Rellenar O2", () => { if (playerOxygen != null) playerOxygen.Refill(); Log("Oxígeno al máximo"); }),
             ("Curar", () => { if (playerHealth != null) playerHealth.RestoreFull(); Log("Vida al máximo"); }),
             ("Tope mochila", ToggleLimit),
+            ("Recuperar cofres", RecoverChests),
+            ("Morir (probar cofre)", () => { Close(); if (playerHealth != null) playerHealth.TakeDamage(99999f); }),
         };
         PlaceButtonRow(w, options, ref y);
 

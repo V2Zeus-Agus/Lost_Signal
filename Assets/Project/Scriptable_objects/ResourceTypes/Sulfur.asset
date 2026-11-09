@@ -18,3 +18,4 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: 7d573a3521ef42248b1ba5ba182896d7, type: 3}
   category: 0
   maxStack: 50
+  rarity: 2
