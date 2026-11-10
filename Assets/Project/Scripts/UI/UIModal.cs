@@ -18,12 +18,19 @@ public static class UIModal
 
     public static event Action<bool> OnChanged;
 
+    /// <summary>El clic izquierdo no dispara (p. ej. en modo construcción).</summary>
+    public static bool FireBlocked { get; set; }
+
+    /// <summary>Este Esc ya lo usó alguien (cancelar construcción): que no pause.</summary>
+    public static void ConsumeEscape() => LastChangeFrame = Time.frameCount;
+
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetStatics()
     {
         openPanels.Clear();
         LastChangeFrame = -1;
         OnChanged = null;
+        FireBlocked = false;
     }
 
     public static bool IsOpenBy(object owner) => openPanels.Contains(owner);

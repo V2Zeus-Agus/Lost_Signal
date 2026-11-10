@@ -24,6 +24,13 @@ public class SaveManager : MonoBehaviour
     [SerializeField] private bool loadOnStart = true;
     [Tooltip("Segundos de juego entre autoguardados. 0 = desactivado.")]
     [SerializeField, Min(0f)] private float autosaveInterval = 120f;
+    [Tooltip("El autoguardado arranca recién cuando el jugador tiene una base con aire (hábitat + generador de O2).")]
+    [SerializeField] private bool autosaveRequiresBase = true;
+
+    /// <summary>¿Corre el autoguardado? Sin base con aire, solo se guarda al salir o al morir.</summary>
+    public bool AutosaveActive =>
+        autosaveInterval > 0f &&
+        (!autosaveRequiresBase || (BaseBuildingManager.Instance != null && BaseBuildingManager.Instance.HasPressurizedBase));
 
     private ProfileSave profile;
     private float autosaveTimer;
@@ -74,7 +81,7 @@ public class SaveManager : MonoBehaviour
         {
             profile.totalPlayTime += Time.deltaTime;
 
-            if (autosaveInterval > 0f)
+            if (AutosaveActive)
             {
                 autosaveTimer += Time.deltaTime;
                 if (autosaveTimer >= autosaveInterval)

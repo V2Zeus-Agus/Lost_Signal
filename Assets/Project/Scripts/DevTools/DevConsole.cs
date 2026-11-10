@@ -148,6 +148,39 @@ public class DevConsole : MonoBehaviour
         Log(chests.Length == 0 ? "No hay cofres de muerte" : $"Recuperado lo que entró de {chests.Length} cofre(s)");
     }
 
+    // Para probar sin mouse (p. ej. control remoto): mueve la cámara como si fuera el mouse.
+    private void LookDelta(Vector2 delta)
+    {
+        PlayerController controller = inventory.GetComponent<PlayerController>();
+        if (controller == null) return;
+        float sensitivity = Mathf.Max(controller.LookSensitivity, 0.001f);
+        controller.Look(delta * (0.1f / sensitivity));
+    }
+
+    private void OpenShop()
+    {
+        UpgradeShop shop = FindFirstObjectByType<UpgradeShop>();
+        if (shop == null) { Log("No hay tienda en esta escena"); return; }
+        Close();
+        shop.Interact(inventory);
+    }
+
+    private void OpenBuildMenu()
+    {
+        BuildModeController builder = FindFirstObjectByType<BuildModeController>();
+        if (builder == null) { Log("No se puede construir en esta escena"); return; }
+        Close();
+        builder.OpenMenu();
+    }
+
+    private void ForceEvent(string id)
+    {
+        if (EnvironmentEventManager.Instance == null) return;
+        EnvironmentEventManager.Instance.Force(id);
+        Log("Evento forzado: " + id);
+        Close();
+    }
+
     private void EmptyBackpack()
     {
         inventory.Container.Clear();
@@ -255,6 +288,11 @@ public class DevConsole : MonoBehaviour
             ("Curar", () => { if (playerHealth != null) playerHealth.RestoreFull(); Log("Vida al máximo"); }),
             ("Tope mochila", ToggleLimit),
             ("Recuperar cofres", RecoverChests),
+            ("Abrir tienda", OpenShop),
+            ("Construir (B)", OpenBuildMenu),
+            ("Mirar abajo", () => LookDelta(new Vector2(0f, -150f))),
+            ("Mirar arriba", () => LookDelta(new Vector2(0f, 150f))),
+            ("Girar 90°", () => LookDelta(new Vector2(900f, 0f))),
             ("Morir (probar cofre)", () => { Close(); if (playerHealth != null) playerHealth.TakeDamage(99999f); }),
         };
         PlaceButtonRow(w, options, ref y);
@@ -267,6 +305,18 @@ public class DevConsole : MonoBehaviour
                 ("Ir al sur (F10)", () => VictoryCheat.Teleport(new Vector3(0f, 0f, -450f), "Cuenca Fría (sur)")),
                 ("Ir a la base (F11)", () => VictoryCheat.Teleport(new Vector3(5f, 0f, -11.5f), "Base")),
             };
+            if (BaseBuildingManager.Instance != null)
+                teleports.Add(("Ir a mi base", () =>
+                {
+                    if (!BaseBuildingManager.Instance.MovePlayerToCheckpoint()) Log("Todavía no tenés una base con aire");
+                }));
+            if (EnvironmentEventManager.Instance != null)
+            {
+                teleports.Add(("Tormenta de polvo", () => ForceEvent("dust_storm")));
+                teleports.Add(("Ola de frío", () => ForceEvent("cold_wave")));
+                teleports.Add(("Lluvia de meteoritos", () => ForceEvent("meteor_shower")));
+                teleports.Add(("Terminar evento", () => { EnvironmentEventManager.Instance.Stop(); Log("Evento terminado"); }));
+            }
             foreach (SalvageWreck wreck in FindObjectsByType<SalvageWreck>(FindObjectsSortMode.InstanceID))
             {
                 SalvageWreck target = wreck;

@@ -9,6 +9,7 @@ public class PlayerInteractor : MonoBehaviour
     [SerializeField] private LayerMask interactableLayers = ~0;
 
     private IInteractable currentTarget;
+    private float promptTimer;
 
     public event Action<string> OnFocusChanged;
 
@@ -30,6 +31,17 @@ public class PlayerInteractor : MonoBehaviour
         {
             currentTarget = found;
             RefreshPrompt();
+            promptTimer = 0f;
+        }
+        else if (currentTarget != null)
+        {
+            // El texto puede cambiar mientras lo mirás (una fábrica que produce, un cofre que se llena).
+            promptTimer += Time.deltaTime;
+            if (promptTimer >= 0.5f)
+            {
+                promptTimer = 0f;
+                RefreshPrompt();
+            }
         }
     }
 

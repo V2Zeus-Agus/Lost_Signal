@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ded683639c8ee5f48a899e55926117fc, type: 3}
+  m_Name: FuelFactory
+  m_EditorClassIdentifier: Assembly-CSharp::BuildableDefinition
+  id: fuel_factory
+  displayName: "F\xE1brica de Combustible"
+  description: "Extrae Combustible sin l\xEDmite: 1 cada 45 s de juego. Guarda 30;
+    si hay un cofre a menos de 10 m, lo manda ah\xED."
+  kind: 4
+  cost:
+  - item: {fileID: 11400000, guid: 6f2ad5493d0d8e74290fcbe43f070c77, type: 2}
+    amount: 20
+  - item: {fileID: 11400000, guid: 92cee376a38fded418e210b3e1580cc2, type: 2}
+    amount: 6
+  - item: {fileID: 11400000, guid: df910d05eb3f9974b872d195abdb76f4, type: 2}
+    amount: 6
+  - item: {fileID: 11400000, guid: b29e3c695fcbf4645820c39085f595c1, type: 2}
+    amount: 2
+  mustBeInsideHabitat: 0
+  requiresPressurizedBase: 1
+  producedItem: {fileID: 11400000, guid: 2496ed62fa6f8034aa93c71aa7008820, type: 2}
+  secondsPerItem: 45
+  storageCapacity: 30

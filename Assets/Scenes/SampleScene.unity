@@ -998,7 +998,7 @@ Transform:
   m_GameObject: {fileID: 43159500}
   serializedVersion: 2
   m_LocalRotation: {x: -0.011089924, y: 0.7070198, z: -0.035446655, w: -0.70621777}
-  m_LocalPosition: {x: -2.5999997, y: 0, z: 0.00000015497207}
+  m_LocalPosition: {x: -2.5999985, y: -1.0499883, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3752,6 +3752,7 @@ MonoBehaviour:
   weaponText: {fileID: 853055298}
   promptText: {fileID: 1854030240}
   notificationText: {fileID: 523391986}
+  requirementsTitle: PARA REPARAR LA NAVE
   notificationDuration: 2
 --- !u!114 &207834927
 MonoBehaviour:
@@ -5418,7 +5419,7 @@ Transform:
   m_GameObject: {fileID: 279495325}
   serializedVersion: 2
   m_LocalRotation: {x: 0.09870304, y: 0.9585339, z: -0.047782768, w: 0.26303497}
-  m_LocalPosition: {x: 1.3000001, y: 0, z: -2.2516658}
+  m_LocalPosition: {x: 1.2999992, y: -1.0499883, z: -2.251665}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -9523,7 +9524,7 @@ Transform:
   m_GameObject: {fileID: 627257418}
   serializedVersion: 2
   m_LocalRotation: {x: -0.111554995, y: 0.6982518, z: -0.072658285, w: -0.70336396}
-  m_LocalPosition: {x: -2.5999997, y: 0, z: 0.00000015497207}
+  m_LocalPosition: {x: -2.6000004, y: -0.4520275, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -15136,7 +15137,7 @@ Transform:
   m_GameObject: {fileID: 1139631167}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: -0.8601923, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -15168,7 +15169,7 @@ Transform:
   m_GameObject: {fileID: 1144295554}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: -0.4520275, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -17818,7 +17819,7 @@ Transform:
   m_GameObject: {fileID: 1420002754}
   serializedVersion: 2
   m_LocalRotation: {x: -0.017344793, y: 0.70689404, z: 0.119387366, w: -0.6969553}
-  m_LocalPosition: {x: -2.5999997, y: 0, z: 0.00000015497207}
+  m_LocalPosition: {x: -2.5999994, y: -0.8601923, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -17850,7 +17851,7 @@ Transform:
   m_GameObject: {fileID: 1453339520}
   serializedVersion: 2
   m_LocalRotation: {x: 0.10199884, y: 0.958659, z: 0.093405254, w: 0.24868576}
-  m_LocalPosition: {x: 1.3000001, y: 0, z: -2.2516658}
+  m_LocalPosition: {x: 1.2999992, y: -0.8601923, z: -2.2516632}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -18920,7 +18921,7 @@ Transform:
   m_GameObject: {fileID: 1520103830}
   serializedVersion: 2
   m_LocalRotation: {x: 0.017694693, y: 0.2651735, z: -0.18087836, w: 0.94691765}
-  m_LocalPosition: {x: 1.3, y: 0, z: 2.2516658}
+  m_LocalPosition: {x: 1.2999992, y: -0.8601923, z: 2.251667}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -19824,31 +19825,14 @@ GameObject:
   m_Component:
   - component: {fileID: 1569192743}
   - component: {fileID: 1569192742}
-  - component: {fileID: 1569192741}
+  - component: {fileID: 1569192744}
   m_Layer: 0
-  m_Name: OxygenShop
+  m_Name: UpgradeShop
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1569192741
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1569192740}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7697ba2be4c66bf49b1c30eb0d298212, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::OxygenShop
-  playerOxygen: {fileID: 1570840699}
-  playerUpgrades: {fileID: 1570840700}
-  costType: {fileID: 11400000, guid: 6f2ad5493d0d8e74290fcbe43f070c77, type: 2}
-  costPerUpgrade: 3
-  scaledBaseCost: 10
 --- !u!65 &1569192742
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -19886,6 +19870,29 @@ Transform:
   - {fileID: 1217813146}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1569192744
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1569192740}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 463ddbdb4820d0b499983b095dfa1de3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UpgradeShop
+  shopName: Tienda de mejoras
+  playerUpgrades: {fileID: 1570840700}
+  playerOxygen: {fileID: 1570840699}
+  offerOxygen: 1
+  oxygenCostItem: {fileID: 11400000, guid: 6f2ad5493d0d8e74290fcbe43f070c77, type: 2}
+  oxygenEarlyCost: 3
+  oxygenScaledBaseCost: 10
+  offerBackpack: 0
+  backpackLevels: []
+  offerSuit: 0
+  suitLevels: []
 --- !u!1 &1570840687
 GameObject:
   m_ObjectHideFlags: 0
@@ -21125,7 +21132,7 @@ Transform:
   m_GameObject: {fileID: 1647854994}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: -1.0499883, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -22006,7 +22013,7 @@ Transform:
   m_GameObject: {fileID: 1721504717}
   serializedVersion: 2
   m_LocalRotation: {x: 0.15347989, y: 0.9535989, z: 0.029819999, w: 0.2573012}
-  m_LocalPosition: {x: 1.3000001, y: 0, z: -2.2516658}
+  m_LocalPosition: {x: 1.3000002, y: -0.4520275, z: -2.251667}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -23619,7 +23626,7 @@ Transform:
   m_GameObject: {fileID: 1838161655}
   serializedVersion: 2
   m_LocalRotation: {x: 0.076455, y: 0.26425496, z: -0.1005022, w: 0.9561503}
-  m_LocalPosition: {x: 1.3, y: 0, z: 2.2516658}
+  m_LocalPosition: {x: 1.2999992, y: -1.0499883, z: 2.251666}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -25726,7 +25733,7 @@ Transform:
   m_GameObject: {fileID: 2019345247}
   serializedVersion: 2
   m_LocalRotation: {x: 0.0719076, y: 0.25012213, z: 0.15672971, w: 0.952735}
-  m_LocalPosition: {x: 1.3, y: 0, z: 2.2516658}
+  m_LocalPosition: {x: 1.3000002, y: -0.4520275, z: 2.2516632}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

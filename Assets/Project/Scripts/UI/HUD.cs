@@ -26,6 +26,10 @@ public class HUD : MonoBehaviour
     [SerializeField] private TMP_Text promptText;
     [SerializeField] private TMP_Text notificationText;
 
+    [Header("Textos")]
+    [Tooltip("Título de la lista de recursos de la nave (en Mars: el despegue).")]
+    [SerializeField] private string requirementsTitle = "PARA REPARAR LA NAVE";
+
     [Header("Notifications")]
     [SerializeField] private float notificationDuration = 2f;
 
@@ -113,7 +117,7 @@ public class HUD : MonoBehaviour
     {
         oxygenBar.maxValue = max;
         oxygenBar.value = current;
-        string status = oxygen.InSafeZone ? " · recargando en la nave" : "";
+        string status = oxygen.InSafeZone ? " · recargando" : "";
         oxygenText.text = $"O2: {Mathf.CeilToInt(current)}/{max:0} s{status}";
         oxygenText.color = current <= max * 0.25f && !oxygen.InSafeZone ? new Color(1f, 0.35f, 0.3f) : Color.white;
     }
@@ -121,7 +125,7 @@ public class HUD : MonoBehaviour
     private void UpdateResources(ItemDefinition changedType, int newAmount)
     {
         builder.Clear();
-        builder.AppendLine("<b>PARA REPARAR LA NAVE</b>");
+        builder.Append("<b>").Append(requirementsTitle).AppendLine("</b>");
         foreach (RepairRequirement requirement in shipRepair.Requirements)
         {
             ItemDefinition type = requirement.resourceType;

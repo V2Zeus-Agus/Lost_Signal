@@ -22,6 +22,8 @@ public class PlanetDefinition : ScriptableObject
     [Min(0f)] public float pressure = 1f;
     [Tooltip("Temperatura promedio en °C. (Se usa desde la Fase 1.)")]
     public float temperatureCelsius = -60f;
+    [Tooltip("Presión real para mostrar en el HUD (kPa). Marte: 0,6. Tierra: 101.")]
+    [Min(0f)] public float pressureKPa = 101f;
     [Min(0.1f)] public float gravityMultiplier = 1f;
 
     [Header("Recursos")]

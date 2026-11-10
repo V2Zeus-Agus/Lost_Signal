@@ -35,7 +35,7 @@ public class TutorialGuide : MonoBehaviour
     private ShipRepair shipRepair;
     private Inventory inventory;
     private SalvageWreck wreck;
-    private OxygenShop oxygenShop;
+    private UpgradeShop oxygenShop;
     private HealStation healStation;
     private PlayerUpgrades upgrades;
     private PlayerOxygen oxygen;
@@ -98,7 +98,7 @@ public class TutorialGuide : MonoBehaviour
         shipRepair = FindFirstObjectByType<ShipRepair>();
         inventory = FindFirstObjectByType<Inventory>();
         wreck = FindFirstObjectByType<SalvageWreck>();
-        oxygenShop = FindFirstObjectByType<OxygenShop>();
+        oxygenShop = FindFirstObjectByType<UpgradeShop>();
         healStation = FindFirstObjectByType<HealStation>();
         oxygen = FindFirstObjectByType<PlayerOxygen>();
 
@@ -153,10 +153,10 @@ public class TutorialGuide : MonoBehaviour
             objectives.Add(new Objective
             {
                 optional = true,
-                label = () => "Opcional: mejorá el tanque de O2 en su estación",
+                label = () => "Opcional: mejorá el tanque de O2 en la tienda de mejoras",
                 // Se da por cumplido si mejorás el tanque o si ya fuiste a depositar a la nave.
                 isDone = () => upgrades.GetLevel(UpgradeIds.OxygenTank) > 0 || (shipRepair != null && shipRepair.Progress > 0f),
-                targets = () => Single(oxygenShop.transform, "MEJORA DEL TANQUE DE O2", StationColor)
+                targets = () => Single(oxygenShop.transform, "TIENDA DE MEJORAS", StationColor)
             });
         }
 
@@ -234,7 +234,7 @@ public class TutorialGuide : MonoBehaviour
     private void AddIntroTargets()
     {
         if (shipRepair != null) frameTargets.Add(new Target { transform = shipRepair.transform, label = "NAVE · recargá O2 en la cúpula", color = ShipColor });
-        if (oxygenShop != null) frameTargets.Add(new Target { transform = oxygenShop.transform, label = "MEJORA DEL TANQUE DE O2", color = StationColor });
+        if (oxygenShop != null) frameTargets.Add(new Target { transform = oxygenShop.transform, label = "TIENDA DE MEJORAS", color = StationColor });
         if (healStation != null) frameTargets.Add(new Target { transform = healStation.transform, label = "ESTACIÓN MÉDICA", color = StationColor });
         if (wreck != null) frameTargets.Add(new Target { transform = wreck.transform, label = "NAVE ROTA · partes útiles", color = WreckColor });
 

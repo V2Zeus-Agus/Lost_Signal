@@ -14,6 +14,15 @@ public class ResourceNode : MonoBehaviour, IInteractable, ISaveable
     public ItemDefinition Item => resourceType;
     public int HarvestsLeft => harvestsLeft;
 
+    // Cuántas cosechas tenía al cargar la escena (antes de aplicar el guardado). Para el "% extraído".
+    private int initialHarvests = -1;
+    public int InitialHarvests => initialHarvests >= 0 ? initialHarvests : harvestsLeft;
+
+    private void Awake()
+    {
+        if (initialHarvests < 0) initialHarvests = harvestsLeft;
+    }
+
     public string GetPrompt() => $"[E] Recolectar {resourceType.displayName}";
 
     public void Interact(Inventory inventory)
@@ -47,6 +56,7 @@ public class ResourceNode : MonoBehaviour, IInteractable, ISaveable
     public void RestoreState(string json, ItemDatabase database)
     {
         State state = JsonUtility.FromJson<State>(json);
+        if (initialHarvests < 0) initialHarvests = harvestsLeft;
         harvestsLeft = state.harvestsLeft;
         gameObject.SetActive(harvestsLeft > 0);
     }

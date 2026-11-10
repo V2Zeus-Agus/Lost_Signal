@@ -19,6 +19,7 @@ MonoBehaviour:
   oxygenDrainMultiplier: 1
   pressure: 1
   temperatureCelsius: -60
+  pressureKPa: 0.6
   gravityMultiplier: 1
   availableResources:
   - {fileID: 11400000, guid: 6f2ad5493d0d8e74290fcbe43f070c77, type: 2}

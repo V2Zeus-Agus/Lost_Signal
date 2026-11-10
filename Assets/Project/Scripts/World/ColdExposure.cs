@@ -27,9 +27,20 @@ public class ColdExposure : MonoBehaviour
     [Header("Referencias")]
     [SerializeField] private Health health;
     [SerializeField] private PlayerOxygen oxygen;
+    [SerializeField] private PlayerUpgrades upgrades;
 
     public float Exposure { get; private set; }
     public bool IsFreezing { get; private set; }
+
+    /// <summary>Temperatura desde la que congela, según el nivel del traje (cada nivel aguanta 20 °C más).</summary>
+    public float CurrentLimit
+    {
+        get
+        {
+            int suit = upgrades != null ? upgrades.GetLevel(UpgradeIds.Suit) : 0;
+            return freezingTemperature - SuitProgression.ColdLimitPerLevel * Mathf.Clamp(suit, 0, SuitProgression.MaxLevel);
+        }
+    }
 
     private Image frost;
     private Canvas canvas;
@@ -40,6 +51,7 @@ public class ColdExposure : MonoBehaviour
     {
         if (health == null) health = GetComponent<Health>();
         if (oxygen == null) oxygen = GetComponent<PlayerOxygen>();
+        if (upgrades == null) upgrades = GetComponent<PlayerUpgrades>();
         BuildOverlay();
     }
 
@@ -54,7 +66,7 @@ public class ColdExposure : MonoBehaviour
 
         BiomeMap biomes = BiomeMap.Instance;
         bool inShelter = oxygen != null && oxygen.InSafeZone;
-        IsFreezing = biomes != null && !inShelter && biomes.CurrentTemperature <= freezingTemperature;
+        IsFreezing = biomes != null && !inShelter && biomes.CurrentTemperature <= CurrentLimit;
 
         if (IsFreezing) Exposure += Time.deltaTime;
         else Exposure = Mathf.Max(0f, Exposure - Time.deltaTime * thawSpeed);
@@ -67,7 +79,7 @@ public class ColdExposure : MonoBehaviour
         if (IsFreezing && !warnedFrost && Exposure > 3f)
         {
             warnedFrost = true;
-            NotificationQueue.Enqueue("El visor se está congelando: buscá calor");
+            NotificationQueue.Enqueue("El visor se está congelando: buscá calor o mejorá el traje");
         }
 
         if (IsFreezing && Exposure >= damageAfterSeconds)

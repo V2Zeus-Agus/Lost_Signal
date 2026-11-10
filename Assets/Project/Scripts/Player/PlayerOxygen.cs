@@ -52,7 +52,7 @@ public class PlayerOxygen : MonoBehaviour
         if (health.IsDead || !GameManager.Instance.IsPlaying) return;
 
         float max = Max;
-        InSafeZone = IsNearShip();
+        InSafeZone = IsNearShip() || ShelterRegistry.IsSheltered(transform.position);
 
         if (InSafeZone)
         {
@@ -62,12 +62,12 @@ public class PlayerOxygen : MonoBehaviour
         else
         {
             // El planeta define qué tan rápido se va el aire (x2 = dura la mitad).
-            float drain = Time.deltaTime * PlanetContext.OxygenDrainMultiplier;
+            float drain = Time.deltaTime * PlanetContext.OxygenDrainMultiplier * (1f + EnvironmentEffects.OxygenDrainBonus);
             Current = Mathf.Max(Current - drain, 0f);
             if (!lowWarningShown && Current <= max * 0.25f)
             {
                 lowWarningShown = true;
-                NotificationQueue.Enqueue("¡Oxígeno bajo! Volvé a la nave");
+                NotificationQueue.Enqueue("¡Oxígeno bajo! Volvé a la nave o a un hábitat con aire");
             }
         }
 
@@ -119,6 +119,7 @@ public class PlayerOxygen : MonoBehaviour
 
     private bool IsNearShip()
     {
+        if (safeZoneCenter == null) return false;
         Vector3 offset = transform.position - safeZoneCenter.position;
         offset.y = 0f;
         return offset.magnitude <= safeZoneRadius;

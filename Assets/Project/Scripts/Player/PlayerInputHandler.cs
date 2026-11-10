@@ -46,7 +46,8 @@ public class PlayerInputHandler : MonoBehaviour
         if (pauseAction.action.WasPressedThisFrame() && !panelOpen)
             GameManager.Instance.TogglePause();
 
-        if (!GameManager.Instance.IsPlaying || UIModal.IsOpen)
+        // El frame en que se cierra un panel tampoco cuenta: si no, la misma E lo vuelve a abrir.
+        if (!GameManager.Instance.IsPlaying || panelOpen)
         {
             playerController.SetMoveInput(Vector2.zero);
             playerController.SetSprint(false);
@@ -66,7 +67,7 @@ public class PlayerInputHandler : MonoBehaviour
 
 
         bool fire = weapon.IsAutomatic ? attackAction.action.IsPressed() : attackAction.action.WasPressedThisFrame();
-        if (fire)
+        if (fire && !UIModal.FireBlocked)
             fireCommand.Execute();
 
 

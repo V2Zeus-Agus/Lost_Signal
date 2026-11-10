@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49b3cc853dbe836408d60c4884281c6c, type: 3}
+  m_Name: BuildCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::BuildCatalog
+  buildables:
+  - {fileID: 11400000, guid: 888d2c0b5b4df2740b132b73935eaf11, type: 2}
+  - {fileID: 11400000, guid: cd48f752a2b121d40b4adb12ecf7b987, type: 2}
+  - {fileID: 11400000, guid: f881ec8be669a0d4aa1b06c398c6b34c, type: 2}
+  - {fileID: 11400000, guid: 287b4bc04ef146e43be6b35322c7b6f9, type: 2}
+  - {fileID: 11400000, guid: 4f9b78f00025c614ea157aef22581260, type: 2}
+  - {fileID: 11400000, guid: ec6b727a2eef1e8419076cb3a85c7280, type: 2}
+  hull: {fileID: 2100000, guid: ef2cb614a7383a74db5d08d01978a872, type: 2}
+  trim: {fileID: 2100000, guid: a9f13e7257ef3e74eb0ce44561cd4af8, type: 2}
+  glass: {fileID: 2100000, guid: b9fb632dfded4ac4989148cf3723ca9f, type: 2}
+  floor: {fileID: 2100000, guid: 5e32650defa42154fb50c15ce8eb0c2f, type: 2}
+  glow: {fileID: 2100000, guid: f207a2abcff692646ba715d1b2364fe2, type: 2}
+  hologramValid: {fileID: 2100000, guid: 6c4542d1766c0804abc429e098186412, type: 2}
+  hologramInvalid: {fileID: 2100000, guid: bbff9476d65a481469babfbfea1f3ee8, type: 2}

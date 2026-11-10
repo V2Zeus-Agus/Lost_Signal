@@ -1,3 +1,4 @@
+// LEGADO: reemplazado por UpgradeShop (tienda única). Se deja para no romper herramientas viejas.
 using System;
 using System.Collections.Generic;
 using System.Text;

@@ -38,6 +38,22 @@ public class BiomeMap : MonoBehaviour
     public float CurrentTemperature { get; private set; }
     public float DustAmount { get; private set; }
 
+    /// <summary>Cuánto del bioma norte / sur hay donde está el jugador (0 a 1).</summary>
+    public float NorthWeight { get; private set; }
+    public float SouthWeight { get; private set; }
+
+    // ---------- Eventos de entorno (los escribe EnvironmentEventManager) ----------
+
+    /// <summary>Tormenta de polvo (0 a 1): más polvo y niebla, solo en el norte.</summary>
+    public float StormIntensity { get; set; }
+
+    /// <summary>Ola de frío: grados que se suman a la temperatura del sur (negativo = más frío).</summary>
+    public float ColdWaveOffset { get; set; }
+
+    // Cuánto suma una tormenta al máximo (constantes: no dependen de lo guardado en la escena).
+    private const float stormExtraFog = 0.06f;
+    private const float stormExtraDust = 3f;
+
     private Color fogColor;
     private float fogDensity;
     private Color sunColor;
@@ -112,6 +128,15 @@ public class BiomeMap : MonoBehaviour
             temp += (deepSouthTemperature - southBiome.temperatureCelsius) * depth * wS;
         }
 
+        // Eventos: la tormenta solo pega en el norte y la ola de frío solo en el sur.
+        fd += stormExtraFog * StormIntensity * wN;
+        dustTarget += stormExtraDust * StormIntensity * wN;
+        temp += ColdWaveOffset * wS;
+        fc = Color.Lerp(fc, northBiome != null ? northBiome.dustColor : fc, 0.35f * StormIntensity * wN);
+        si *= 1f - 0.5f * StormIntensity * wN; // el polvo tapa el sol
+
+        NorthWeight = wN;
+        SouthWeight = wS;
         dominant = wN > 0.5f ? northBiome : wS > 0.5f ? southBiome : baseBiome;
     }
 
