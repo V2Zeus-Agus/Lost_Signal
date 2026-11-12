@@ -72,6 +72,7 @@ public class TutorialGuide : MonoBehaviour
     private TMP_Text objectivesText;
     private RectTransform objectivesPanel;
     private string lastObjectivesText;
+    private TMP_Text collapseHint;
 
     private class MarkerView
     {
@@ -297,34 +298,27 @@ public class TutorialGuide : MonoBehaviour
         scaler.matchWidthOrHeight = 0.5f;
         canvasRect = (RectTransform)canvasGo.transform;
 
-        // Panel de objetivos (arriba a la derecha)
-        var panel = new GameObject("Objectives", typeof(RectTransform), typeof(Image));
-        panel.transform.SetParent(canvasGo.transform, false);
-        RectTransform panelRt = (RectTransform)panel.transform;
-        panelRt.anchorMin = panelRt.anchorMax = panelRt.pivot = new Vector2(1f, 1f);
-        panelRt.anchoredPosition = new Vector2(-24f, -24f);
-        panelRt.sizeDelta = new Vector2(560f, 200f);
-        objectivesPanel = panelRt;
-        panel.GetComponent<Image>().color = new Color(0.02f, 0.02f, 0.06f, 0.55f);
-
-        objectivesText = CreateText(panel.transform, 24, TextAlignmentOptions.TopLeft);
-        RectTransform textRt = objectivesText.rectTransform;
-        textRt.anchorMin = Vector2.zero;
-        textRt.anchorMax = Vector2.one;
-        textRt.offsetMin = new Vector2(18f, 14f);
-        textRt.offsetMax = new Vector2(-18f, -14f);
+        // Panel de objetivos: arriba de todo en la columna derecha del HUD, con el mismo estilo.
+        objectivesPanel = HUDTheme.Panel("TutorialObjectives", "Tutorial", HUDTheme.Accent);
+        HUDRoot.Instance.Add(HUDRoot.Instance.Right, objectivesPanel, -10);
+        objectivesText = HUDTheme.Label(objectivesPanel, "", 18, HUDTheme.Text);
+        // Se oculta junto con los objetivos ([J]); el título queda como recordatorio.
+        TMP_Text hint = RuntimeUI.Text("ToggleHint", objectivesPanel.GetChild(0), "[J] ocultar", 14, TextAlignmentOptions.TopRight);
+        hint.color = HUDTheme.Muted;
+        RuntimeUI.Stretch(hint.rectTransform);
+        collapseHint = hint;
+        objectivesText.lineSpacing = 4f;
     }
 
     private void RefreshObjectivesPanel()
     {
         var sb = new StringBuilder();
-        sb.AppendLine("<b>OBJETIVOS</b>");
 
         if (InIntro)
         {
             int secondsLeft = Mathf.CeilToInt(introSeconds - playTime);
-            sb.AppendLine($"<color=#7fd8ff>> Reconocé la zona ({secondsLeft} s)</color>");
-            sb.AppendLine("<size=20><color=#bbbbbb>Los marcadores muestran la nave, las estaciones,\nlos recursos y los nidos. Tu O2 solo se recarga en la cúpula.</color></size>");
+            sb.AppendLine($"<color=#7fd8ff><b>■ Reconocé la zona</b> ({secondsLeft} s)</color>");
+            sb.AppendLine("<size=15><color=#9aa6b5>Los marcadores muestran la nave, las estaciones, los recursos y los nidos. Tu O2 solo se recarga en la cúpula.</color></size>");
         }
         else
         {
@@ -333,21 +327,22 @@ public class TutorialGuide : MonoBehaviour
                 Objective o = objectives[i];
                 string text = o.label();
                 if (i < currentIndex || (i > currentIndex && o.isDone()))
-                    sb.Append("<color=#66ff77><s>").Append(StripTags(text)).AppendLine("</s></color>");
+                    sb.Append("<color=#78eb84>■ <s>").Append(StripTags(text)).AppendLine("</s></color>");
                 else if (i == currentIndex)
-                    sb.Append("<color=#ffffff><b>> ").Append(text).AppendLine("</b></color>");
+                    sb.Append("<color=#ff8f33>■</color> <color=#ffffff><b>").Append(text).AppendLine("</b></color>");
                 else
-                    sb.Append("<color=#999999>  ").Append(StripTags(text)).AppendLine("</color>");
+                    sb.Append("<color=#5d6672>■</color> <color=#9aa6b5>").Append(StripTags(text)).AppendLine("</color>");
             }
         }
 
+        bool collapsed = QuestHUD.Collapsed;
+        objectivesText.gameObject.SetActive(!collapsed);
+        if (collapseHint != null) collapseHint.text = collapsed ? "<color=#ff8f33>[J]</color> mostrar" : "[J] ocultar";
         string result = sb.ToString();
         if (result != lastObjectivesText)
         {
             lastObjectivesText = result;
-            objectivesText.text = result;
-            // El panel se ajusta al alto del texto.
-            objectivesPanel.sizeDelta = new Vector2(objectivesPanel.sizeDelta.x, objectivesText.preferredHeight + 30f);
+            objectivesText.text = result.TrimEnd(); // el panel se ajusta solo (LayoutGroup)
         }
     }
 

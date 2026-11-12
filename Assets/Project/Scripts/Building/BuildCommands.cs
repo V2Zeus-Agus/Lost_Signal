@@ -25,7 +25,7 @@ public class PlacePieceCommand : ICommand
     public void Execute()
     {
         if (manager == null || definition == null || inventory == null) return;
-        if (!inventory.Container.TryConsume(definition.cost))
+        if (!DevCheats.InfiniteMaterials && !inventory.Container.TryConsume(definition.cost))
         {
             NotificationQueue.Enqueue("Te falta: " + CostText.Missing(inventory, definition.cost));
             return;
@@ -63,7 +63,8 @@ public class RemovePieceCommand : ICommand
         int produced = factory != null && factory.Item != null ? factory.Stored : 0;
 
         int needed = produced;
-        foreach (ItemAmount c in piece.Definition.cost) if (c.item != null) needed += c.amount;
+        if (!DevCheats.InfiniteMaterials)
+            foreach (ItemAmount c in piece.Definition.cost) if (c.item != null) needed += c.amount;
         int free = inventory.Container.HasTotalLimit ? inventory.MaxItems - inventory.TotalItems : int.MaxValue;
         if (needed > free)
         {
@@ -71,8 +72,10 @@ public class RemovePieceCommand : ICommand
             return;
         }
 
-        foreach (ItemAmount c in piece.Definition.cost)
-            if (c.item != null) inventory.Add(c.item, c.amount);
+        // Con materiales infinitos no se devuelve el costo: así las pruebas no llenan la mochila.
+        if (!DevCheats.InfiniteMaterials)
+            foreach (ItemAmount c in piece.Definition.cost)
+                if (c.item != null) inventory.Add(c.item, c.amount);
         if (produced > 0)
         {
             inventory.Add(factory.Item, produced);

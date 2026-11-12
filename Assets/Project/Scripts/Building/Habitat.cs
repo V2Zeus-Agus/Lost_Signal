@@ -12,21 +12,29 @@ public class Habitat : MonoBehaviour, IShelter
     public const float FloorTop = 0.3f;
     public const float WallHeight = 3.2f;
 
-    /// <summary>Lados en espacio local: 0 = frente (+Z, puerta), 1 = +X, 2 = -Z, 3 = -X.</summary>
+    /// <summary>Lados en espacio local: 0 = frente (+Z), 1 = +X, 2 = -Z, 3 = -X.</summary>
     public static readonly Vector3[] SideDirections = { Vector3.forward, Vector3.right, Vector3.back, Vector3.left };
 
     private static readonly List<Habitat> all = new List<Habitat>();
     public static IReadOnlyList<Habitat> All => all;
 
     private readonly GameObject[] sides = new GameObject[4];
+    private readonly GameObject[] doorSides = new GameObject[4];
+    private readonly bool[] open = new bool[4];
+    private readonly bool[] doors = new bool[4];
     private Light interiorLight;
 
     public bool IsPressurized { get; private set; }
     public string ShelterName => "hábitat presurizado";
 
-    public void Init(GameObject[] sideObjects, Light light)
+    /// <param name="doorObjects">Versión con puerta de cada pared (se activa al construir una Puerta).</param>
+    public void Init(GameObject[] sideObjects, GameObject[] doorObjects, Light light)
     {
-        for (int i = 0; i < 4; i++) sides[i] = sideObjects[i];
+        for (int i = 0; i < 4; i++)
+        {
+            sides[i] = sideObjects[i];
+            doorSides[i] = doorObjects != null ? doorObjects[i] : null;
+        }
         interiorLight = light;
         SetPressurized(false);
     }
@@ -42,9 +50,31 @@ public class Habitat : MonoBehaviour, IShelter
         ShelterRegistry.Unregister(this);
     }
 
-    public void SetSideOpen(int side, bool open)
+    /// <summary>Pared compartida con otro módulo: desaparece.</summary>
+    public void SetSideOpen(int side, bool isOpen)
     {
-        if (sides[side] != null) sides[side].SetActive(!open);
+        open[side] = isOpen;
+        RefreshSide(side);
+    }
+
+    /// <summary>Una pieza "Puerta" construida en esta pared la cambia por la versión con puerta.</summary>
+    public void SetDoor(int side, bool hasDoor)
+    {
+        doors[side] = hasDoor;
+        RefreshSide(side);
+    }
+
+    public bool IsSideOpen(int side) => open[side];
+    /// <summary>¿Ese lado ya tiene puerta? (ninguno la trae: se construye aparte).</summary>
+    public bool HasDoor(int side) => doors[side];
+    /// <summary>¿Tiene al menos una puerta construida?</summary>
+    public bool HasAnyDoor => doors[0] || doors[1] || doors[2] || doors[3];
+
+    private void RefreshSide(int side)
+    {
+        bool door = doors[side] && doorSides[side] != null;
+        if (sides[side] != null) sides[side].SetActive(!open[side] && !door);
+        if (doorSides[side] != null) doorSides[side].SetActive(!open[side] && door);
     }
 
     public void SetPressurized(bool pressurized)

@@ -16,6 +16,10 @@ public class BuildCatalog : ScriptableObject
     public Material hologramValid;
     public Material hologramInvalid;
 
+    [Header("Decoración del hábitat (opcional)")]
+    [Tooltip("Modelo que se pone sobre el techo de cada módulo (p. ej. paneles solares de KayKit).")]
+    public GameObject habitatRoofDecor;
+
     public BuildableDefinition Get(string id) => buildables.Find(b => b != null && b.Id == id);
 
     // Fallbacks por si falta algún material.

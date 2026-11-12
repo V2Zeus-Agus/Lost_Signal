@@ -11,8 +11,20 @@ public class GameScreens : MonoBehaviour
     [SerializeField] private TMP_Text defeatMessage;
     [SerializeField] private GameObject optionsPanel;
 
+    private PauseMenu pauseMenu;
+
     private void Start()
     {
+        // La pausa se arma por código con el estilo del HUD; el panel viejo de la escena queda oculto.
+        pauseMenu = gameObject.AddComponent<PauseMenu>();
+        pauseMenu.Build(OnResumeButton, OnOptionsButton, OnRestartButton, OnMainMenuButton);
+        foreach (GameObject panel in new[] { optionsPanel, victoryPanel, defeatPanel, tutorialPanel })
+            ScreenStyler.Apply(panel);
+        // El cambio de disparo pasó a la ruedita del mouse: se actualiza el texto de la intro.
+        if (tutorialPanel != null)
+            foreach (TMP_Text text in tutorialPanel.GetComponentsInChildren<TMP_Text>(true))
+                text.text = text.text.Replace("2/Q cambiar arma", "Ruedita cambiar arma").Replace("Q cambiar arma", "Ruedita cambiar arma");
+
         GameManager.Instance.OnStateChanged += Show;
         Show(GameManager.Instance.State);
     }
@@ -26,7 +38,8 @@ public class GameScreens : MonoBehaviour
     private void Show(GameState state)
     {
         tutorialPanel.SetActive(state == GameState.Tutorial);
-        pausePanel.SetActive(state == GameState.Paused);
+        pausePanel.SetActive(false);
+        if (pauseMenu != null) pauseMenu.SetVisible(state == GameState.Paused);
         victoryPanel.SetActive(state == GameState.Victory);
         defeatPanel.SetActive(state == GameState.Defeat);
         if (state == GameState.Defeat)
@@ -43,6 +56,7 @@ public class GameScreens : MonoBehaviour
     public void OnOptionsButton()
     {
         pausePanel.SetActive(false);
+        if (pauseMenu != null) pauseMenu.SetVisible(false);
         optionsPanel.SetActive(true);
     }
 

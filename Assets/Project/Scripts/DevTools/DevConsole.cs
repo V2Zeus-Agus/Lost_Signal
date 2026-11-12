@@ -23,6 +23,7 @@ public class DevConsole : MonoBehaviour
     private TMP_InputField amountField;
     private TMP_Text logText;
     private TMP_Text limitLabel;
+    private TMP_Text infiniteLabel;
     private Health playerHealth;
     private PlayerOxygen playerOxygen;
     private ShipRepair shipRepair;
@@ -138,6 +139,17 @@ public class DevConsole : MonoBehaviour
     {
         if (limitLabel != null)
             limitLabel.text = inventory.UnlimitedOverride ? "Tope mochila: OFF" : "Tope mochila: ON";
+        if (infiniteLabel != null)
+            infiniteLabel.text = DevCheats.InfiniteMaterials ? "<color=#7fff9a>Mats infinitos: ON</color>" : "Mats infinitos: OFF";
+    }
+
+    private void ToggleInfinite()
+    {
+        DevCheats.InfiniteMaterials = !DevCheats.InfiniteMaterials;
+        RefreshLimitLabel();
+        Log(DevCheats.InfiniteMaterials
+            ? "Materiales infinitos: mejoras y construcciones gratis (desarmar no devuelve nada)"
+            : "Materiales infinitos apagados");
     }
 
     // Usa el mismo Interact del cofre, como si el jugador fuera hasta cada uno.
@@ -287,6 +299,7 @@ public class DevConsole : MonoBehaviour
             ("Rellenar O2", () => { if (playerOxygen != null) playerOxygen.Refill(); Log("Oxígeno al máximo"); }),
             ("Curar", () => { if (playerHealth != null) playerHealth.RestoreFull(); Log("Vida al máximo"); }),
             ("Tope mochila", ToggleLimit),
+            ("Mats infinitos", ToggleInfinite),
             ("Recuperar cofres", RecoverChests),
             ("Abrir tienda", OpenShop),
             ("Construir (B)", OpenBuildMenu),
@@ -341,6 +354,7 @@ public class DevConsole : MonoBehaviour
             Button b = RuntimeUI.Button(buttons[i].label, parent, buttons[i].label, buttons[i].action, 20);
             RuntimeUI.Place((RectTransform)b.transform, Pad + (i % perRow) * (bw + gap), y + (i / perRow) * 50f, bw, 42f);
             if (buttons[i].label == "Tope mochila") limitLabel = b.GetComponentInChildren<TMP_Text>();
+            if (buttons[i].label == "Mats infinitos") infiniteLabel = b.GetComponentInChildren<TMP_Text>();
         }
         y += Mathf.CeilToInt(buttons.Count / (float)perRow) * 50f + 10f;
     }

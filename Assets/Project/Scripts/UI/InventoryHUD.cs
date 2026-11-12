@@ -1,21 +1,21 @@
 using System.Collections.Generic;
-using System.Text;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 /// <summary>
-/// Panel de mochila (abajo a la izquierda): slots usados y cantidad de cada item.
-/// Se arma en runtime, no hace falta tocar el Canvas del HUD.
+/// Panel de mochila (abajo a la izquierda): barra de capacidad y una fila con ícono por item.
+/// Vive en la columna inferior izquierda del HUDRoot.
 /// </summary>
 public class InventoryHUD : MonoBehaviour
 {
     [SerializeField] private Inventory inventory;
 
-    private Canvas canvas;
-    private RectTransform panel;
-    private TMP_Text text;
+    private TMP_Text capacity;
+    private HUDBar capacityBar;
+    private TMP_Text empty;
+    private HUDLineList lines;
     private bool dirty = true;
+    private readonly List<KeyValuePair<ItemDefinition, int>> totals = new List<KeyValuePair<ItemDefinition, int>>();
 
     private void Awake()
     {
@@ -45,10 +45,7 @@ public class InventoryHUD : MonoBehaviour
 
     private void LateUpdate()
     {
-        bool playing = GameManager.Instance != null && GameManager.Instance.IsPlaying;
-        canvas.enabled = playing;
-        if (!playing || !dirty || inventory == null) return;
-
+        if (!dirty || inventory == null) return;
         dirty = false;
         Refresh();
     }
@@ -56,7 +53,7 @@ public class InventoryHUD : MonoBehaviour
     private void Refresh()
     {
         ItemContainer container = inventory.Container;
-        var totals = new List<KeyValuePair<ItemDefinition, int>>();
+        totals.Clear();
         int usedSlots = 0;
 
         foreach (ItemStack slot in container.Slots)
@@ -68,61 +65,35 @@ public class InventoryHUD : MonoBehaviour
             else totals[index] = new KeyValuePair<ItemDefinition, int>(slot.item, totals[index].Value + slot.amount);
         }
 
-        var sb = new StringBuilder();
-        int totalItems = container.TotalCount;
-        bool full = container.HasTotalLimit ? totalItems >= container.MaxTotalItems : usedSlots >= container.SlotCount;
-        string capacityColor = full ? "#ff6655" : "#bbbbbb";
-        string capacity = container.HasTotalLimit
-            ? $"{totalItems}/{container.MaxTotalItems} items"
-            : $"{usedSlots}/{container.SlotCount} slots";
-        sb.Append("<b>MOCHILA</b>  <size=20><color=").Append(capacityColor).Append('>')
-          .Append(capacity).AppendLine("</color></size>");
+        int used = container.HasTotalLimit ? container.TotalCount : usedSlots;
+        int max = container.HasTotalLimit ? container.MaxTotalItems : container.SlotCount;
+        float t = max > 0 ? (float)used / max : 0f;
+        bool full = used >= max;
+        capacity.text = $"{used} / {max} {(container.HasTotalLimit ? "items" : "slots")}";
+        capacity.color = full ? HUDTheme.Bad : HUDTheme.Muted;
+        capacityBar.Set(t, full ? HUDTheme.Bad : t >= 0.8f ? HUDTheme.Warn : HUDTheme.Teal);
 
-        if (totals.Count == 0)
-            sb.Append("<size=20><color=#999999>Vacía</color></size>");
-
-        foreach (KeyValuePair<ItemDefinition, int> pair in totals)
+        empty.gameObject.SetActive(totals.Count == 0);
+        for (int i = 0; i < totals.Count; i++)
         {
-            sb.Append("<color=#").Append(ColorUtility.ToHtmlStringRGB(pair.Key.uiColor)).Append('>')
-              .Append(pair.Key.displayName).Append("</color>: ").Append(pair.Value).AppendLine();
+            HUDLine line = lines.Get(i);
+            line.SetItem(totals[i].Key);
+            line.Left.text = totals[i].Key.displayName;
+            line.Right.text = $"<b>{totals[i].Value}</b>";
         }
-
-        sb.AppendLine().Append("<size=18><color=#888888>[Tab] abrir inventario</color></size>");
-        text.text = sb.ToString().TrimEnd();
-        panel.sizeDelta = new Vector2(300f, text.preferredHeight + 24f);
+        lines.Trim(totals.Count);
     }
 
     private void BuildUI()
     {
-        var canvasGo = new GameObject("InventoryHUDCanvas", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler));
-        canvasGo.transform.SetParent(transform, false);
-        canvas = canvasGo.GetComponent<Canvas>();
-        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        canvas.sortingOrder = -1;
-        CanvasScaler scaler = canvasGo.GetComponent<CanvasScaler>();
-        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1920, 1080);
-        scaler.matchWidthOrHeight = 0.5f;
+        RectTransform panel = HUDTheme.Panel("Backpack", "Mochila", HUDTheme.Teal);
+        HUDRoot.Instance.Add(HUDRoot.Instance.BottomLeft, panel, 0);
 
-        var panelGo = new GameObject("Backpack", typeof(RectTransform), typeof(Image));
-        panelGo.transform.SetParent(canvasGo.transform, false);
-        panel = (RectTransform)panelGo.transform;
-        panel.anchorMin = panel.anchorMax = panel.pivot = Vector2.zero;
-        panel.anchoredPosition = new Vector2(24f, 24f);
-        panel.sizeDelta = new Vector2(300f, 80f);
-        panelGo.GetComponent<Image>().color = new Color(0.02f, 0.02f, 0.06f, 0.55f);
-
-        var textGo = new GameObject("Text", typeof(RectTransform), typeof(TextMeshProUGUI));
-        textGo.transform.SetParent(panelGo.transform, false);
-        text = textGo.GetComponent<TextMeshProUGUI>();
-        text.fontSize = 24;
-        text.richText = true;
-        text.raycastTarget = false;
-        text.alignment = TextAlignmentOptions.TopLeft;
-        RectTransform rt = text.rectTransform;
-        rt.anchorMin = Vector2.zero;
-        rt.anchorMax = Vector2.one;
-        rt.offsetMin = new Vector2(16f, 12f);
-        rt.offsetMax = new Vector2(-16f, -12f);
+        HUDTheme.SplitRow(panel, 18f, 15f, out TMP_Text hint, out capacity);
+        hint.text = "[Tab] abrir";
+        hint.color = HUDTheme.Muted;
+        capacityBar = new HUDBar(panel, 6f, HUDTheme.Teal);
+        empty = HUDTheme.Label(panel, "Vacía", 16, HUDTheme.Muted);
+        lines = new HUDLineList(panel, 22f, 17f);
     }
 }

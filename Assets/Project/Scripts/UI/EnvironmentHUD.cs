@@ -14,7 +14,6 @@ public class EnvironmentHUD : MonoBehaviour
     [SerializeField, Min(0.5f)] private float extractionRefreshSeconds = 3f;
 
     private TMP_Text text;
-    private Canvas canvas;
     private float timer, extractionTimer;
     private float extractedPercent;
     private ResourceNode[] nodes;
@@ -26,22 +25,18 @@ public class EnvironmentHUD : MonoBehaviour
         if (cold == null && upgrades != null) cold = upgrades.GetComponent<ColdExposure>();
         nodes = FindObjectsByType<ResourceNode>(FindObjectsInactive.Include, FindObjectsSortMode.None);
 
-        canvas = RuntimeUI.CreateCanvas("EnvironmentHUDCanvas", transform, 5);
-        UnityEngine.UI.Image bg = RuntimeUI.Image("Panel", canvas.transform, new Color(0f, 0f, 0f, 0.4f), false);
-        RectTransform rt = bg.rectTransform;
-        rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(1f, 1f);
-        rt.anchoredPosition = new Vector2(-24f, -150f);
-        rt.sizeDelta = new Vector2(410f, 210f);
-
-        text = RuntimeUI.Text("Text", bg.transform, "", 20);
-        RuntimeUI.Stretch(text.rectTransform, 12f);
+        // Panel dentro de la columna derecha del HUD, debajo de los objetivos.
+        RectTransform panel = HUDTheme.Panel("Environment", "Entorno", HUDTheme.Teal);
+        HUDRoot.Instance.Add(HUDRoot.Instance.Right, panel, 10);
+        text = HUDTheme.Label(panel, "", 17, HUDTheme.Text);
+        text.lineSpacing = 6f;
         UpdateExtraction();
+        Redraw();
     }
 
     private void Update()
     {
         bool playing = GameManager.Instance != null && GameManager.Instance.IsPlaying;
-        canvas.enabled = playing && !UIModal.IsOpen;
         if (!playing) return;
 
         extractionTimer += Time.deltaTime;
@@ -72,35 +67,39 @@ public class EnvironmentHUD : MonoBehaviour
     private void Redraw()
     {
         sb.Clear();
+        string muted = HUDTheme.Hex(HUDTheme.Muted);
         BiomeMap biomes = BiomeMap.Instance;
         PlanetDefinition planet = PlanetContext.Current;
         string planetName = planet != null ? planet.displayName.ToUpperInvariant() : "PLANETA";
         string zone = biomes != null && biomes.CurrentBiome != null ? biomes.CurrentBiome.displayName : "";
-        sb.Append("<b>").Append(planetName).Append("</b>");
-        if (!string.IsNullOrEmpty(zone)) sb.Append(" · ").Append(zone);
+        sb.Append("<b><size=20>").Append(planetName).Append("</size></b>");
+        if (!string.IsNullOrEmpty(zone)) sb.Append("  <color=").Append(muted).Append('>').Append(zone).Append("</color>");
         sb.AppendLine();
 
         if (biomes != null)
         {
             float temp = biomes.CurrentTemperature;
             float limit = cold != null ? cold.CurrentLimit : SuitProgression.BaseColdLimit;
-            string color = temp <= limit ? "#ff6655" : temp <= limit + 15f ? "#ffcc55" : "#ffffff";
-            sb.Append("Temperatura: <color=").Append(color).Append('>').Append(temp.ToString("0")).Append(" °C</color>");
+            string color = temp <= limit ? HUDTheme.Hex(HUDTheme.Bad) : temp <= limit + 15f ? HUDTheme.Hex(HUDTheme.Warn) : "#ffffff";
+            sb.Append("<color=").Append(muted).Append(">Temp.</color> <color=").Append(color).Append("><b>")
+              .Append(temp.ToString("0")).Append(" °C</b></color>");
         }
-        if (planet != null) sb.Append("   Presión: ").Append(planet.pressureKPa.ToString("0.0")).Append(" kPa");
+        if (planet != null)
+            sb.Append("    <color=").Append(muted).Append(">Presión</color> <b>").Append(planet.pressureKPa.ToString("0.0")).Append(" kPa</b>");
         sb.AppendLine();
 
         int suit = upgrades != null ? upgrades.GetLevel(UpgradeIds.Suit) : 0;
-        sb.Append("Traje nivel ").Append(suit).Append(" · aguanta ").Append(SuitProgression.ColdLimit(suit).ToString("0")).AppendLine(" °C");
+        sb.Append("<color=").Append(muted).Append(">Traje</color> <b>Nv ").Append(suit).Append("</b>  <color=").Append(muted)
+          .Append(">aguanta hasta</color> <b>").Append(SuitProgression.ColdLimit(suit).ToString("0")).AppendLine(" °C</b>");
 
         if (upgrades != null)
         {
             IShelter shelter = ShelterRegistry.Find(upgrades.transform.position);
-            if (shelter != null) sb.Append("<color=#7fd4ff>Adentro: ").Append(shelter.ShelterName).AppendLine("</color>");
+            if (shelter != null) sb.Append("<color=").Append(HUDTheme.Hex(HUDTheme.Teal)).Append(">● Adentro: ").Append(shelter.ShelterName).AppendLine("</color>");
             else
             {
                 Habitat unpressurized = Habitat.FindContaining(upgrades.transform.position);
-                if (unpressurized != null) sb.AppendLine("<color=#ffcc55>Hábitat sin aire: falta un generador de O2</color>");
+                if (unpressurized != null) sb.Append("<color=").Append(HUDTheme.Hex(HUDTheme.Warn)).AppendLine(">● Hábitat sin aire: falta un generador de O2</color>");
             }
         }
 
@@ -108,15 +107,15 @@ public class EnvironmentHUD : MonoBehaviour
         if (events != null && events.Current != null)
         {
             int s = Mathf.CeilToInt(events.Current.Remaining);
-            sb.Append("<color=#ff8866>").Append(events.Current.DisplayName).Append(" · ")
+            sb.Append("<color=").Append(HUDTheme.Hex(HUDTheme.Bad)).Append("><b>▲ ").Append(events.Current.DisplayName).Append("</b>  ")
               .Append(s / 60).Append(':').Append((s % 60).ToString("00")).AppendLine("</color>");
         }
 
-        sb.Append("Extraído a mano: ").Append(extractedPercent.ToString("0")).Append('%');
+        sb.Append("<color=").Append(muted).Append(">Extraído a mano</color> <b>").Append(extractedPercent.ToString("0")).Append("%</b>");
         if (SaveManager.Instance != null)
             sb.AppendLine().Append(SaveManager.Instance.AutosaveActive
-                ? "<color=#7fff9a>Autoguardado activo</color>"
-                : "<color=#9aa>Sin autoguardado: construí una base con aire</color>");
+                ? "<color=" + HUDTheme.Hex(HUDTheme.Good) + "><size=15>● Autoguardado activo</size></color>"
+                : "<color=" + muted + "><size=15>○ Sin autoguardado: construí una base con aire</size></color>");
         text.text = sb.ToString();
     }
 }

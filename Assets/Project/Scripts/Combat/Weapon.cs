@@ -40,9 +40,13 @@ public class Weapon : MonoBehaviour
         OnFired?.Invoke();
     }
 
-    public void NextStrategy()
+    public void NextStrategy() => CycleStrategy(1);
+
+    /// <summary>Avanza (+1) o retrocede (-1) entre los modos de disparo (ruedita del mouse).</summary>
+    public void CycleStrategy(int direction)
     {
-        currentIndex = (currentIndex + 1) % strategies.Length;
+        int count = strategies.Length;
+        currentIndex = ((currentIndex + direction) % count + count) % count;
         OnStrategyChanged?.Invoke(CurrentStrategyName);
     }
 }

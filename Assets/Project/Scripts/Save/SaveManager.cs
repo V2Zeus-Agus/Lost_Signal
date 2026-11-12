@@ -35,6 +35,11 @@ public class SaveManager : MonoBehaviour
     private ProfileSave profile;
     private float autosaveTimer;
 
+    // Si Unity recompila los scripts en pleno Play, los diccionarios (mejoras, mochila) se vacían
+    // pero este objeto sigue vivo: guardar en ese estado borraría la partida. Este flag no
+    // sobrevive a la recompilación, así que después de una no se guarda nada.
+    [NonSerialized] private bool sessionValid;
+
     public ProfileSave Profile => profile;
     public float TotalPlayTime => profile != null ? profile.totalPlayTime : 0f;
 
@@ -57,6 +62,7 @@ public class SaveManager : MonoBehaviour
 
     private void Start()
     {
+        sessionValid = true;
         profile = loadOnStart ? SaveSystem.LoadProfile() : null;
         bool hasSave = profile != null;
         if (profile == null) profile = new ProfileSave();
@@ -108,6 +114,11 @@ public class SaveManager : MonoBehaviour
     public void SaveGame()
     {
         if (profile == null) return;
+        if (!sessionValid)
+        {
+            Debug.LogWarning("[SaveManager] Se recompiló en pleno Play: no se guarda para no pisar la partida. Pará y volvé a dar Play.");
+            return;
+        }
 
         if (playerInventory != null) profile.playerInventory = playerInventory.Container.ToData();
         if (playerUpgrades != null) profile.upgrades = playerUpgrades.ToData();

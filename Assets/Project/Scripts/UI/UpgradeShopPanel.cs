@@ -26,6 +26,8 @@ public class UpgradeShopPanel : MonoBehaviour
         public RectTransform costRow;
         public Button buy;
         public TMP_Text buyLabel;
+        public Button pin;
+        public TMP_Text pinLabel;
     }
 
     private readonly List<Card> cards = new List<Card>();
@@ -65,6 +67,7 @@ public class UpgradeShopPanel : MonoBehaviour
         inventory.Container.OnSlotsChanged += MarkDirty;
         if (shop.Upgrades != null) shop.Upgrades.OnUpgradeChanged += HandleUpgradeChanged;
         if (GameManager.Instance != null) GameManager.Instance.OnStateChanged += HandleStateChanged;
+        PinnedUpgrades.OnChanged += MarkDirty;
 
         Build();
         canvas.gameObject.SetActive(true);
@@ -87,6 +90,7 @@ public class UpgradeShopPanel : MonoBehaviour
         if (inventory != null) inventory.Container.OnSlotsChanged -= MarkDirty;
         if (shop != null && shop.Upgrades != null) shop.Upgrades.OnUpgradeChanged -= HandleUpgradeChanged;
         if (GameManager.Instance != null) GameManager.Instance.OnStateChanged -= HandleStateChanged;
+        PinnedUpgrades.OnChanged -= MarkDirty;
     }
 
     private void MarkDirty() => dirty = true;
@@ -116,6 +120,9 @@ public class UpgradeShopPanel : MonoBehaviour
         Refresh();
     }
 
+    private void TogglePin(Card card) =>
+        PinnedUpgrades.Toggle(PinnedUpgrades.UpgradeKey(card.offer.UpgradeId), card.offer.Title);
+
     // ---------- Vista ----------
 
     private void Refresh()
@@ -141,6 +148,11 @@ public class UpgradeShopPanel : MonoBehaviour
                 card.buy.interactable = affordable;
                 card.buyLabel.text = affordable ? "Mejorar" : "Faltan recursos";
             }
+
+            bool pinned = PinnedUpgrades.IsPinned(PinnedUpgrades.UpgradeKey(o.UpgradeId));
+            card.pin.interactable = !o.IsMaxed;
+            card.pinLabel.text = pinned ? "Fijada en HUD" : "Fijar en HUD";
+            card.pin.GetComponent<Image>().color = pinned ? new Color(0.15f, 0.55f, 0.65f, 1f) : RuntimeUI.ButtonColor;
         }
     }
 
@@ -194,9 +206,13 @@ public class UpgradeShopPanel : MonoBehaviour
 
             Card captured = card;
             card.buy = RuntimeUI.Button("Buy", t, "Mejorar", () => Buy(captured), 22);
-            RuntimeUI.Place((RectTransform)card.buy.transform, Width - Pad * 2f - 210f, 34f, 190f, 58f);
+            RuntimeUI.Place((RectTransform)card.buy.transform, Width - Pad * 2f - 210f, 14f, 190f, 52f);
             card.buy.GetComponent<Image>().color = new Color(0.85f, 0.45f, 0.15f, 1f);
             card.buyLabel = card.buy.GetComponentInChildren<TMP_Text>();
+
+            card.pin = RuntimeUI.Button("Pin", t, "Fijar en HUD", () => TogglePin(captured), 17);
+            RuntimeUI.Place((RectTransform)card.pin.transform, Width - Pad * 2f - 210f, 74f, 190f, 40f);
+            card.pinLabel = card.pin.GetComponentInChildren<TMP_Text>();
 
             cards.Add(card);
             y += CardHeight + 12f;

@@ -31,5 +31,5 @@ public static class CostText
     }
 
     public static bool CanAfford(Inventory inventory, IReadOnlyList<ItemAmount> cost) =>
-        inventory != null && inventory.Container.HasAll(cost);
+        DevCheats.InfiniteMaterials || (inventory != null && inventory.Container.HasAll(cost));
 }

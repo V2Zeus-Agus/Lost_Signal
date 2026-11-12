@@ -28,6 +28,9 @@ MonoBehaviour:
     amount: 2
   mustBeInsideHabitat: 0
   requiresPressurizedBase: 1
+  model: {fileID: 919132149155446097, guid: 01eae02c535bf5146bbc4a9b30c83dad, type: 3}
+  modelScale: 1
+  modelYaw: 0
   producedItem: {fileID: 11400000, guid: 2496ed62fa6f8034aa93c71aa7008820, type: 2}
   secondsPerItem: 45
   storageCapacity: 30

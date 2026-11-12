@@ -26,6 +26,14 @@ public static class BuildPlacement
         // Frente de la pieza mirando al jugador.
         float facePlayerYaw = cam.eulerAngles.y + 180f;
 
+        if (definition.kind == BuildableKind.Door)
+        {
+            // La puerta siempre encaja en una pared de hábitat; no se chequea espacio libre.
+            snapped = DoorPlacement.TrySnap(hit.point, out position, out rotation, out problem);
+            if (!snapped) problem = "Apuntá a una pared de un hábitat";
+            return true;
+        }
+
         if (definition.kind == BuildableKind.Habitat)
         {
             if (TrySnapHabitat(hit.point, rotationSteps, out position, out rotation))
@@ -62,7 +70,20 @@ public static class BuildPlacement
             float minDistance = Mathf.Max(footprint.extents.x, footprint.extents.z) + 0.9f;
             Vector3 flat = position - cam.position;
             flat.y = 0f;
-            if (flat.magnitude < minDistance && !definition.mustBeInsideHabitat)
+            if (flat.magnitude < minDistance && definition.mustBeInsideHabitat)
+            {
+                // Adentro de un hábitat: se corre hacia adelante sobre el piso (rayo desde la altura
+                // de la cámara para no pegarle al techo), solo si sigue quedando adentro.
+                Vector3 forward = Vector3.ProjectOnPlane(cam.forward, Vector3.up).normalized;
+                Vector3 pushed = new Vector3(cam.position.x, cam.position.y, cam.position.z) + forward * minDistance;
+                if (Physics.Raycast(pushed, Vector3.down, out RaycastHit floor, 5f, ~0, QueryTriggerInteraction.Ignore) &&
+                    Habitat.FindContaining(floor.point + Vector3.up * 0.2f) != null)
+                {
+                    position = floor.point;
+                    hit = floor;
+                }
+            }
+            else if (flat.magnitude < minDistance)
             {
                 Vector3 forward = Vector3.ProjectOnPlane(cam.forward, Vector3.up).normalized;
                 Vector3 pushed = new Vector3(cam.position.x, 0f, cam.position.z) + forward * minDistance;

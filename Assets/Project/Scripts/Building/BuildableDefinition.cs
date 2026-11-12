@@ -7,7 +7,9 @@ public enum BuildableKind
     OxygenGenerator,
     Storage,
     Lamp,
-    Factory
+    Factory,
+    UpgradeShop,
+    Door
 }
 
 /// <summary>Algo que el jugador puede construir (data-driven, como los items).</summary>
@@ -24,6 +26,14 @@ public class BuildableDefinition : ScriptableObject
     public bool mustBeInsideHabitat;
     [Tooltip("Solo aparece habilitado cuando el jugador tiene una base con aire (hábitat + generador de O2).")]
     public bool requiresPressurizedBase;
+
+    [Header("Modelo 3D (opcional)")]
+    [Tooltip("Modelo que reemplaza a las primitivas (p. ej. KayKit Space Base Bits). Se escala solo para entrar en el lugar de la pieza. No aplica al hábitat (sus paredes se abren al unir módulos).")]
+    public GameObject model;
+    [Tooltip("Multiplica el tamaño ajustado automáticamente.")]
+    [Min(0.1f)] public float modelScale = 1f;
+    [Tooltip("Giro del modelo en grados (para que mire hacia adelante).")]
+    public float modelYaw;
 
     [Header("Fábrica (solo si kind = Factory)")]
     public ItemDefinition producedItem;

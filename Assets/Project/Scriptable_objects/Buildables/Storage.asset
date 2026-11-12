@@ -20,3 +20,10 @@ MonoBehaviour:
   - item: {fileID: 11400000, guid: 6f2ad5493d0d8e74290fcbe43f070c77, type: 2}
     amount: 8
   mustBeInsideHabitat: 0
+  requiresPressurizedBase: 0
+  model: {fileID: 919132149155446097, guid: 51d1d075cf10fb643a6915f067527484, type: 3}
+  modelScale: 1
+  modelYaw: 0
+  producedItem: {fileID: 0}
+  secondsPerItem: 30
+  storageCapacity: 30

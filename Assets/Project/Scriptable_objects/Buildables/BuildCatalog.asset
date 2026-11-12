@@ -14,7 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BuildCatalog
   buildables:
   - {fileID: 11400000, guid: 888d2c0b5b4df2740b132b73935eaf11, type: 2}
+  - {fileID: 11400000, guid: be041511b6b4bc245af8d9f42d5d6838, type: 2}
   - {fileID: 11400000, guid: cd48f752a2b121d40b4adb12ecf7b987, type: 2}
+  - {fileID: 11400000, guid: 066587241cbb52d4cbe7ce9f90dc7756, type: 2}
   - {fileID: 11400000, guid: f881ec8be669a0d4aa1b06c398c6b34c, type: 2}
   - {fileID: 11400000, guid: 287b4bc04ef146e43be6b35322c7b6f9, type: 2}
   - {fileID: 11400000, guid: 4f9b78f00025c614ea157aef22581260, type: 2}
@@ -26,3 +28,4 @@ MonoBehaviour:
   glow: {fileID: 2100000, guid: f207a2abcff692646ba715d1b2364fe2, type: 2}
   hologramValid: {fileID: 2100000, guid: 6c4542d1766c0804abc429e098186412, type: 2}
   hologramInvalid: {fileID: 2100000, guid: bbff9476d65a481469babfbfea1f3ee8, type: 2}
+  habitatRoofDecor: {fileID: 919132149155446097, guid: 98e28e5dd34aff644b5bda68619997b9, type: 3}

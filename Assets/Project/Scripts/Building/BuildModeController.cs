@@ -199,7 +199,13 @@ public class BuildModeController : MonoBehaviour
             if (valid == lastValid) return;
             lastValid = valid;
             Material m = valid ? c.manager.Catalog.HologramValid : c.manager.Catalog.HologramInvalid;
-            foreach (Renderer r in renderers) if (r != null) r.sharedMaterial = m;
+            foreach (Renderer r in renderers)
+            {
+                if (r == null) continue;
+                var mats = new Material[r.sharedMaterials.Length];
+                for (int i = 0; i < mats.Length; i++) mats[i] = m;
+                r.sharedMaterials = mats; // los modelos importados pueden tener varios materiales
+            }
         }
 
         public void Tick()
@@ -223,6 +229,7 @@ public class BuildModeController : MonoBehaviour
             string status = !hasPose ? "<color=#ff8866>Apuntá al suelo</color>"
                           : problem != null ? $"<color=#ff8866>{problem}</color>"
                           : !affordable ? $"<color=#ff8866>Te falta: {CostText.Missing(c.inventory, Definition.cost)}</color>"
+                          : snapped && Definition.kind == BuildableKind.Door ? "<color=#7fff9a>Encaja en la pared: abre una entrada</color>"
                           : snapped ? "<color=#7fff9a>Se une al hábitat de al lado</color>"
                           : "<color=#7fff9a>Listo para construir</color>";
             string rotateHint = Definition.kind == BuildableKind.Habitat ? "[R] Girar 90°" : "[R] Girar";
@@ -261,7 +268,8 @@ public class BuildModeController : MonoBehaviour
             }
 
             bool can = piece.CanRemove(out string reason);
-            string status = can ? $"<color=#7fff9a>Devuelve: {CostText.Format(piece.Definition.cost)}</color>" : $"<color=#ff8866>{reason}</color>";
+            string refund = DevCheats.InfiniteMaterials ? "No devuelve nada (mats infinitos)" : $"Devuelve: {CostText.Format(piece.Definition.cost)}";
+            string status = can ? $"<color=#7fff9a>{refund}</color>" : $"<color=#ff8866>{reason}</color>";
             c.Hint($"<b>Desarmar {piece.Definition.displayName}</b> · {status}\n{controls}");
 
             if (LeftClick && can && !c.InGrace) new RemovePieceCommand(c.manager, piece, c.inventory).Execute();

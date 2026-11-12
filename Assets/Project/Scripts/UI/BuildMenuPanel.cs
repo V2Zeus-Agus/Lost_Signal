@@ -8,9 +8,9 @@ using UnityEngine.UI;
 /// <summary>Menú de construcción (B): una tarjeta por pieza con su costo, y la opción Desarmar.</summary>
 public class BuildMenuPanel : MonoBehaviour
 {
-    private const float Width = 980f;
+    private const float Width = 1460f; // 3 columnas de tarjetas
     private const float CardWidth = 455f;
-    private const float CardHeight = 150f;
+    private const float CardHeight = 170f;
     private const float Pad = 24f;
 
     private static BuildMenuPanel instance;
@@ -22,6 +22,8 @@ public class BuildMenuPanel : MonoBehaviour
         public TMP_Text buttonLabel;
         public Button button;
         public TMP_Text description;
+        public Button pin;
+        public TMP_Text pinLabel;
     }
 
     private readonly List<Card> cards = new List<Card>();
@@ -68,6 +70,7 @@ public class BuildMenuPanel : MonoBehaviour
         UIModal.Open(this);
         if (inventory != null) inventory.Container.OnSlotsChanged += MarkDirty;
         if (GameManager.Instance != null) GameManager.Instance.OnStateChanged += HandleStateChanged;
+        PinnedUpgrades.OnChanged += MarkDirty;
         Refresh();
     }
 
@@ -79,6 +82,7 @@ public class BuildMenuPanel : MonoBehaviour
         UIModal.Close(this);
         if (inventory != null) inventory.Container.OnSlotsChanged -= MarkDirty;
         if (GameManager.Instance != null) GameManager.Instance.OnStateChanged -= HandleStateChanged;
+        PinnedUpgrades.OnChanged -= MarkDirty;
     }
 
     private void CloseAndNotify()
@@ -126,6 +130,9 @@ public class BuildMenuPanel : MonoBehaviour
             card.description.text = unlocked
                 ? $"<color=#aab>{card.definition.description}</color>"
                 : "<color=#ffb070>Se desbloquea con una base con aire: hábitat + generador de O2.</color>";
+            bool pinned = PinnedUpgrades.IsPinned(PinnedUpgrades.BuildKey(card.definition.Id));
+            card.pinLabel.text = pinned ? "Fijada" : "Fijar en HUD";
+            card.pin.GetComponent<Image>().color = pinned ? new Color(0.15f, 0.55f, 0.65f, 1f) : RuntimeUI.ButtonColor;
         }
     }
 
@@ -141,7 +148,7 @@ public class BuildMenuPanel : MonoBehaviour
         RuntimeUI.Stretch(dim.rectTransform);
 
         int count = catalog.buildables.Count + 1; // + Desarmar
-        int rows = Mathf.CeilToInt(count / 2f);
+        int rows = Mathf.CeilToInt(count / 3f);
         float height = 86f + rows * (CardHeight + 12f) + 40f;
         Image window = RuntimeUI.Image("Window", canvas.transform, RuntimeUI.PanelColor);
         RuntimeUI.Center(window.rectTransform, Width, height);
@@ -165,10 +172,15 @@ public class BuildMenuPanel : MonoBehaviour
             name.fontSizeMax = 24f;
             RuntimeUI.Place(name.rectTransform, 14f, 12f, CardWidth - 200f, 30f);
             TMP_Text desc = RuntimeUI.Text("Desc", t, $"<color=#aab>{definition.description}</color>", 16);
-            RuntimeUI.Place(desc.rectTransform, 14f, 52f, CardWidth - 28f, 52f);
+            RuntimeUI.Place(desc.rectTransform, 14f, 52f, CardWidth - 28f - 150f, 72f);
             card.description = desc;
             card.costRow = RuntimeUI.Rect("Cost", t);
-            RuntimeUI.Place(card.costRow, 14f, 112f, CardWidth - 28f, 30f);
+            RuntimeUI.Place(card.costRow, 14f, 130f, CardWidth - 28f, 30f);
+
+            BuildableDefinition pinTarget = definition;
+            card.pin = RuntimeUI.Button("Pin", t, "Fijar en HUD", () => PinnedUpgrades.Toggle(PinnedUpgrades.BuildKey(pinTarget.Id), pinTarget.displayName), 16);
+            RuntimeUI.Place((RectTransform)card.pin.transform, CardWidth - 150f, 58f, 136f, 34f);
+            card.pinLabel = card.pin.GetComponentInChildren<TMP_Text>();
 
             BuildableDefinition captured = definition;
             Button button = RuntimeUI.Button("Build", t, "Construir", () => Select(captured), 18);
@@ -192,7 +204,7 @@ public class BuildMenuPanel : MonoBehaviour
     private static Transform CardRoot(Transform window, int index)
     {
         Image bg = RuntimeUI.Image("Card" + index, window, new Color(1f, 1f, 1f, 0.05f), false);
-        RuntimeUI.Place(bg.rectTransform, Pad + (index % 2) * (CardWidth + 22f), 80f + (index / 2) * (CardHeight + 12f), CardWidth, CardHeight);
+        RuntimeUI.Place(bg.rectTransform, Pad + (index % 3) * (CardWidth + 22f), 80f + (index / 3) * (CardHeight + 12f), CardWidth, CardHeight);
         return bg.transform;
     }
 

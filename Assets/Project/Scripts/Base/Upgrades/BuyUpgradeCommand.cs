@@ -26,7 +26,7 @@ public class BuyUpgradeCommand : ICommand
         }
 
         string next = offer.NextEffect;
-        if (!inventory.Container.TryConsume(offer.NextCost))
+        if (!DevCheats.InfiniteMaterials && !inventory.Container.TryConsume(offer.NextCost))
         {
             Message = "Te falta: " + CostText.Missing(inventory, offer.NextCost);
             return;

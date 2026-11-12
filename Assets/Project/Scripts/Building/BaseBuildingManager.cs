@@ -112,9 +112,26 @@ public class BaseBuildingManager : MonoBehaviour, ISaveable
             }
         }
 
+        // Puertas construidas: cada una cambia la pared del hábitat que tiene detrás.
+        var doorSides = new bool[habitats.Count, 4];
+        foreach (PlacedPiece p in pieces)
+        {
+            if (p == null || !p.gameObject.activeInHierarchy || p.Definition == null || p.Definition.kind != BuildableKind.Door) continue;
+            for (int i = 0; i < habitats.Count; i++)
+            {
+                if (!DoorPlacement.TryGetSide(habitats[i], p.transform.position, p.transform.forward, out int side)) continue;
+                doorSides[i, side] = true;
+                break;
+            }
+        }
+
         for (int i = 0; i < habitats.Count; i++)
         {
-            for (int s = 0; s < 4; s++) habitats[i].SetSideOpen(s, open[i, s]);
+            for (int s = 0; s < 4; s++)
+            {
+                habitats[i].SetDoor(s, doorSides[i, s]);
+                habitats[i].SetSideOpen(s, open[i, s]);
+            }
             habitats[i].SetPressurized(pressurizedGroups.Contains(Find(i)));
         }
 
